@@ -39,7 +39,7 @@ namespace gta_html
         //网页邮件文字的比例值，直接用日语版的数值
         batch_matcher.register_step("80 3D ? ? ? ? 6A F3 0F 10 05", 1, [](const byte_pattern::result_type& addresses)
             {
-                //jmp short +9
+                //5E2069
                 injector::WriteMemory<uchar>(addresses[0].i(24), 0xEBu, true);
             });
 

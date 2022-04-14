@@ -50,7 +50,8 @@ bool CFont::IsSpecialPunctuationMark(GTAChar chr)
         chr == L'；' ||
         chr == L'？' ||
         chr == L'～' ||
-        chr == L'…'
+        chr == L'…' ||     //有些地方是汉字跟英文省略号
+        chr == L'.'
         ;
 #endif
 }

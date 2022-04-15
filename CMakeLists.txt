@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 3.15.0)
 
 cmake_policy(SET CMP0079 NEW)
 set(CMAKE_CXX_STANDARD 20)
+
+# Set vcpkg toolchain file in global settings.json
 set(VCPKG_TARGET_TRIPLET "x86-windows-static")
+
 set(CMAKE_GENERATOR_PLATFORM "Win32")
 
 project(gta4_chs)

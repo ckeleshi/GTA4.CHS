@@ -1,7 +1,8 @@
 #pragma once
-#include "stdinc.h"
+#include <cstdint>
+#include <xbyak/xbyak.h>
 
-template <typename Fn> const uint8 *asm_gen(Fn func) {
+template <typename Fn> const uint8_t *asm_gen(Fn func) {
     using namespace Xbyak::util;
 
     static Xbyak::CodeGenerator code_gen;

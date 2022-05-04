@@ -1,5 +1,5 @@
 ﻿#include "gta_font.h"
-#include "../common/asm_gen.hpp"
+#include "asm_gen.hpp"
 #include "font.h"
 #include "gta_aslr.h"
 #include "plugin.h"

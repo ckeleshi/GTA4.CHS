@@ -60,7 +60,8 @@
 */
 #include "gvm/gvm.hpp"
 
-namespace injector {
+namespace injector
+{
 
 /*
  *  auto_pointer
@@ -75,22 +76,48 @@ union auto_pointer {
     uintptr_t a;
 
   public:
-    auto_pointer() : p(0) {}
-    auto_pointer(const auto_pointer &x) : p(x.p) {}
-    explicit auto_pointer(void *x) : p(x) {}
-    explicit auto_pointer(uint32_t x) : a(x) {}
+    auto_pointer() : p(0)
+    {
+    }
+    auto_pointer(const auto_pointer &x) : p(x.p)
+    {
+    }
+    explicit auto_pointer(void *x) : p(x)
+    {
+    }
+    explicit auto_pointer(uint32_t x) : a(x)
+    {
+    }
 
-    bool is_null() const { return this->p != nullptr; }
+    bool is_null() const
+    {
+        return this->p != nullptr;
+    }
 
 #if __cplusplus >= 201103L || _MSC_VER >= 1800
-    explicit operator bool() const { return is_null(); }
+    explicit operator bool() const
+    {
+        return is_null();
+    }
 #endif
 
-    auto_pointer get() const { return *this; }
-    template <class T> T *get() const { return (T *)this->p; }
-    template <class T> T *get_raw() const { return (T *)this->p; }
+    auto_pointer get() const
+    {
+        return *this;
+    }
+    template <class T> T *get() const
+    {
+        return (T *)this->p;
+    }
+    template <class T> T *get_raw() const
+    {
+        return (T *)this->p;
+    }
 
-    template <class T> operator T *() const { return reinterpret_cast<T *>(p); }
+    template <class T> operator T *() const
+    {
+        return reinterpret_cast<T *>(p);
+    }
 };
 
 /*
@@ -104,83 +131,131 @@ template <class MemTranslator> union basic_memory_pointer {
     uintptr_t a;
 
     // Translates address p to the running executable pointer
-    static auto_pointer memory_translate(void *p) {
+    static auto_pointer memory_translate(void *p)
+    {
         return auto_pointer(MemTranslator()(p));
     }
 
   public:
-    basic_memory_pointer() : p(nullptr) {}
-    basic_memory_pointer(std::nullptr_t) : p(nullptr) {}
-    basic_memory_pointer(uintptr_t x) : a(x) {}
-    basic_memory_pointer(const auto_pointer &x) : p(x.p) {}
-    basic_memory_pointer(const basic_memory_pointer &rhs) : p(rhs.p) {}
+    basic_memory_pointer() : p(nullptr)
+    {
+    }
+    basic_memory_pointer(std::nullptr_t) : p(nullptr)
+    {
+    }
+    basic_memory_pointer(uintptr_t x) : a(x)
+    {
+    }
+    basic_memory_pointer(const auto_pointer &x) : p(x.p)
+    {
+    }
+    basic_memory_pointer(const basic_memory_pointer &rhs) : p(rhs.p)
+    {
+    }
 
-    template <class T> basic_memory_pointer(T *x) : p((void *)x) {}
+    template <class T> basic_memory_pointer(T *x) : p((void *)x)
+    {
+    }
 
     // Gets the translated pointer (plus automatic casting to lhs)
-    auto_pointer get() const { return memory_translate(p); }
+    auto_pointer get() const
+    {
+        return memory_translate(p);
+    }
 
     // Gets the translated pointer (casted to T*)
-    template <class T> T *get() const { return get(); }
+    template <class T> T *get() const
+    {
+        return get();
+    }
 
     // Gets the raw pointer, without translation (casted to T*)
-    template <class T> T *get_raw() const { return auto_pointer(p); }
+    template <class T> T *get_raw() const
+    {
+        return auto_pointer(p);
+    }
 
     // This type can get assigned from void* and uintptr_t
-    basic_memory_pointer &operator=(void *x) { return p = x, *this; }
-    basic_memory_pointer &operator=(uintptr_t x) { return a = x, *this; }
+    basic_memory_pointer &operator=(void *x)
+    {
+        return p = x, *this;
+    }
+    basic_memory_pointer &operator=(uintptr_t x)
+    {
+        return a = x, *this;
+    }
 
     /* Arithmetic */
-    basic_memory_pointer operator+(const basic_memory_pointer &rhs) const {
+    basic_memory_pointer operator+(const basic_memory_pointer &rhs) const
+    {
         return basic_memory_pointer(this->a + rhs.a);
     }
 
-    basic_memory_pointer operator-(const basic_memory_pointer &rhs) const {
+    basic_memory_pointer operator-(const basic_memory_pointer &rhs) const
+    {
         return basic_memory_pointer(this->a - rhs.a);
     }
 
-    basic_memory_pointer operator*(const basic_memory_pointer &rhs) const {
+    basic_memory_pointer operator*(const basic_memory_pointer &rhs) const
+    {
         return basic_memory_pointer(this->a * rhs.a);
     }
 
-    basic_memory_pointer operator/(const basic_memory_pointer &rhs) const {
+    basic_memory_pointer operator/(const basic_memory_pointer &rhs) const
+    {
         return basic_memory_pointer(this->a / rhs.a);
     }
 
     /* Comparision */
-    bool operator==(const basic_memory_pointer &rhs) const {
+    bool operator==(const basic_memory_pointer &rhs) const
+    {
         return this->a == rhs.a;
     }
 
-    bool operator!=(const basic_memory_pointer &rhs) const {
+    bool operator!=(const basic_memory_pointer &rhs) const
+    {
         return this->a != rhs.a;
     }
 
-    bool operator<(const basic_memory_pointer &rhs) const {
+    bool operator<(const basic_memory_pointer &rhs) const
+    {
         return this->a < rhs.a;
     }
 
-    bool operator<=(const basic_memory_pointer &rhs) const {
+    bool operator<=(const basic_memory_pointer &rhs) const
+    {
         return this->a <= rhs.a;
     }
 
-    bool operator>(const basic_memory_pointer &rhs) const {
+    bool operator>(const basic_memory_pointer &rhs) const
+    {
         return this->a > rhs.a;
     }
 
-    bool operator>=(const basic_memory_pointer &rhs) const {
+    bool operator>=(const basic_memory_pointer &rhs) const
+    {
         return this->a >= rhs.a;
     }
 
-    bool is_null() const { return this->p == nullptr; }
-    uintptr_t as_int() const { return this->a; } // does not perform translation
+    bool is_null() const
+    {
+        return this->p == nullptr;
+    }
+    uintptr_t as_int() const
+    {
+        return this->a;
+    } // does not perform translation
 
 #if __cplusplus >= 201103L || _MSC_VER >= 1800 // MSVC 2013
     /* Conversion to other types */
-    explicit operator uintptr_t() const {
+    explicit operator uintptr_t() const
+    {
         return this->a;
     } // does not perform translation
-    explicit operator bool() const { return this->p != nullptr; }
+    explicit operator bool() const
+    {
+        return this->p != nullptr;
+    }
 #else
     // operator bool() -------------- Causes casting problems because of
     // implicitness, use !is_null() { return this->p != nullptr; }
@@ -188,12 +263,9 @@ template <class MemTranslator> union basic_memory_pointer {
 };
 
 // Typedefs including memory translator for the above type
-typedef basic_memory_pointer<address_manager::fn_mem_translator_nop>
-    memory_pointer;
-typedef basic_memory_pointer<address_manager::fn_mem_translator_nop>
-    memory_pointer_raw;
-typedef basic_memory_pointer<address_manager::fn_mem_translator_aslr>
-    memory_pointer_aslr;
+typedef basic_memory_pointer<address_manager::fn_mem_translator_nop> memory_pointer;
+typedef basic_memory_pointer<address_manager::fn_mem_translator_nop> memory_pointer_raw;
+typedef basic_memory_pointer<address_manager::fn_mem_translator_aslr> memory_pointer_aslr;
 
 /*
  *  memory_pointer_tr
@@ -206,51 +278,75 @@ union memory_pointer_tr {
     uintptr_t a;
 
   public:
-    template <class Tr>
-    memory_pointer_tr(const basic_memory_pointer<Tr> &ptr)
-        : p(ptr.get()) {} // Constructs from a basic_memory_pointer
+    template <class Tr> memory_pointer_tr(const basic_memory_pointer<Tr> &ptr) : p(ptr.get())
+    {
+    } // Constructs from a basic_memory_pointer
 
-    memory_pointer_tr(const auto_pointer &ptr)
-        : p(ptr.p) {} // Constructs from a auto_pointer, probably comming from
-                      // basic_memory_pointer::get
+    memory_pointer_tr(const auto_pointer &ptr) : p(ptr.p)
+    {
+    } // Constructs from a auto_pointer, probably comming from
+      // basic_memory_pointer::get
 
-    memory_pointer_tr(const memory_pointer_tr &rhs)
-        : p(rhs.p) {} // Constructs from my own type, copy constructor
+    memory_pointer_tr(const memory_pointer_tr &rhs) : p(rhs.p)
+    {
+    } // Constructs from my own type, copy constructor
 
-    memory_pointer_tr(uintptr_t x)
-        : p(memory_pointer(x).get()) {
+    memory_pointer_tr(uintptr_t x) : p(memory_pointer(x).get())
+    {
     } // Constructs from a integer, translating the address
 
-    memory_pointer_tr(void *x)
-        : p(memory_pointer(x).get()) {
+    memory_pointer_tr(void *x) : p(memory_pointer(x).get())
+    {
     } // Constructs from a void pointer, translating the address
 
     // Just to be method-compatible with basic_memory_pointer ...
-    auto_pointer get() { return auto_pointer(p); }
-    template <class T> T *get() { return get(); }
-    template <class T> T *get_raw() { return get(); }
+    auto_pointer get()
+    {
+        return auto_pointer(p);
+    }
+    template <class T> T *get()
+    {
+        return get();
+    }
+    template <class T> T *get_raw()
+    {
+        return get();
+    }
 
-    memory_pointer_tr operator+(const uintptr_t &rhs) const {
+    memory_pointer_tr operator+(const uintptr_t &rhs) const
+    {
         return memory_pointer_raw(this->a + rhs);
     }
 
-    memory_pointer_tr operator-(const uintptr_t &rhs) const {
+    memory_pointer_tr operator-(const uintptr_t &rhs) const
+    {
         return memory_pointer_raw(this->a - rhs);
     }
 
-    memory_pointer_tr operator*(const uintptr_t &rhs) const {
+    memory_pointer_tr operator*(const uintptr_t &rhs) const
+    {
         return memory_pointer_raw(this->a * rhs);
     }
 
-    memory_pointer_tr operator/(const uintptr_t &rhs) const {
+    memory_pointer_tr operator/(const uintptr_t &rhs) const
+    {
         return memory_pointer_raw(this->a / rhs);
     }
 
-    bool is_null() const { return this->p == nullptr; }
-    uintptr_t as_int() const { return this->a; }
+    bool is_null() const
+    {
+        return this->p == nullptr;
+    }
+    uintptr_t as_int() const
+    {
+        return this->a;
+    }
 
 #if __cplusplus >= 201103L
-    explicit operator uintptr_t() const { return this->a; }
+    explicit operator uintptr_t() const
+    {
+        return this->a;
+    }
 #else
 #endif
 };
@@ -259,8 +355,8 @@ union memory_pointer_tr {
  *  ProtectMemory
  *      Makes the address @addr have a protection of @protection
  */
-inline bool ProtectMemory(memory_pointer_tr addr, size_t size,
-                          DWORD protection) {
+inline bool ProtectMemory(memory_pointer_tr addr, size_t size, DWORD protection)
+{
     return VirtualProtect(addr.get(), size, protection, &protection) != 0;
 }
 
@@ -269,10 +365,9 @@ inline bool ProtectMemory(memory_pointer_tr addr, size_t size,
  *      Unprotect the memory at @addr with size @size so it have all accesses
  * (execute, read and write) Returns the old protection to out_oldprotect
  */
-inline bool UnprotectMemory(memory_pointer_tr addr, size_t size,
-                            DWORD &out_oldprotect) {
-    return VirtualProtect(addr.get(), size, PAGE_EXECUTE_READWRITE,
-                          &out_oldprotect) != 0;
+inline bool UnprotectMemory(memory_pointer_tr addr, size_t size, DWORD &out_oldprotect)
+{
+    return VirtualProtect(addr.get(), size, PAGE_EXECUTE_READWRITE, &out_oldprotect) != 0;
 }
 
 /*
@@ -281,21 +376,23 @@ inline bool UnprotectMemory(memory_pointer_tr addr, size_t size,
  *      On construction unprotects the memory, on destruction reprotects the
  * memory
  */
-struct scoped_unprotect {
+struct scoped_unprotect
+{
     memory_pointer_raw addr;
     size_t size;
     DWORD dwOldProtect;
     bool bUnprotected;
 
-    scoped_unprotect(memory_pointer_tr addr, size_t size) {
+    scoped_unprotect(memory_pointer_tr addr, size_t size)
+    {
         if (size == 0)
             bUnprotected = false;
         else
-            bUnprotected = UnprotectMemory(this->addr = addr.get<void>(),
-                                           this->size = size, dwOldProtect);
+            bUnprotected = UnprotectMemory(this->addr = addr.get<void>(), this->size = size, dwOldProtect);
     }
 
-    ~scoped_unprotect() {
+    ~scoped_unprotect()
+    {
         if (bUnprotected)
             ProtectMemory(this->addr.get(), this->size, this->dwOldProtect);
     }
@@ -306,8 +403,8 @@ struct scoped_unprotect {
  *      Writes into memory @addr the content of @value with a sizeof @size
  *      Does memory unprotection if @vp is true
  */
-inline void WriteMemoryRaw(memory_pointer_tr addr, void *value, size_t size,
-                           bool vp) {
+inline void WriteMemoryRaw(memory_pointer_tr addr, void *value, size_t size, bool vp)
+{
     scoped_unprotect xprotect(addr, vp ? size : 0);
     memcpy(addr.get(), value, size);
 }
@@ -317,8 +414,8 @@ inline void WriteMemoryRaw(memory_pointer_tr addr, void *value, size_t size,
  *      Reads the memory at @addr with a sizeof @size into address @ret
  *      Does memory unprotection if @vp is true
  */
-inline void ReadMemoryRaw(memory_pointer_tr addr, void *ret, size_t size,
-                          bool vp) {
+inline void ReadMemoryRaw(memory_pointer_tr addr, void *ret, size_t size, bool vp)
+{
     scoped_unprotect xprotect(addr, vp ? size : 0);
     memcpy(ret, addr.get(), size);
 }
@@ -328,8 +425,8 @@ inline void ReadMemoryRaw(memory_pointer_tr addr, void *ret, size_t size,
  *      Fills the memory at @addr with the byte @value doing it @size times
  *      Does memory unprotection if @vp is true
  */
-inline void MemoryFill(memory_pointer_tr addr, uint8_t value, size_t size,
-                       bool vp) {
+inline void MemoryFill(memory_pointer_tr addr, uint8_t value, size_t size, bool vp)
+{
     scoped_unprotect xprotect(addr, vp ? size : 0);
     memset(addr.get(), value, size);
 }
@@ -339,8 +436,8 @@ inline void MemoryFill(memory_pointer_tr addr, uint8_t value, size_t size,
  *      Assigns the object @value into the same object type at @addr
  *      Does memory unprotection if @vp is true
  */
-template <class T>
-inline T &WriteObject(memory_pointer_tr addr, const T &value, bool vp = false) {
+template <class T> inline T &WriteObject(memory_pointer_tr addr, const T &value, bool vp = false)
+{
     scoped_unprotect xprotect(addr, vp ? sizeof(value) : 0);
     return (*addr.get<T>() = value);
 }
@@ -350,8 +447,8 @@ inline T &WriteObject(memory_pointer_tr addr, const T &value, bool vp = false) {
  *      Assigns the object @value with the value of the same object type at
  * @addr Does memory unprotection if @vp is true
  */
-template <class T>
-inline T &ReadObject(memory_pointer_tr addr, T &value, bool vp = false) {
+template <class T> inline T &ReadObject(memory_pointer_tr addr, T &value, bool vp = false)
+{
     scoped_unprotect xprotect(addr, vp ? sizeof(value) : 0);
     return (value = *addr.get<T>());
 }
@@ -361,8 +458,8 @@ inline T &ReadObject(memory_pointer_tr addr, T &value, bool vp = false) {
  *      Writes the object of type T into the address @addr
  *      Does memory unprotection if @vp is true
  */
-template <class T>
-inline void WriteMemory(memory_pointer_tr addr, T value, bool vp = false) {
+template <class T> inline void WriteMemory(memory_pointer_tr addr, T value, bool vp = false)
+{
     WriteObject(addr, value, vp);
 }
 
@@ -371,8 +468,8 @@ inline void WriteMemory(memory_pointer_tr addr, T value, bool vp = false) {
  *      Reads the object type T at address @addr
  *      Does memory unprotection if @vp is true
  */
-template <class T>
-inline T ReadMemory(memory_pointer_tr addr, bool vp = false) {
+template <class T> inline T ReadMemory(memory_pointer_tr addr, bool vp = false)
+{
     T value;
     return ReadObject(addr, value, vp);
 }
@@ -383,15 +480,16 @@ inline T ReadMemory(memory_pointer_tr addr, bool vp = false) {
  * range [@default_base, @default_end] and replaces it with the proper offset in
  * the pointer @replacement_base. Does memory unprotection if @vp is true.
  */
-inline memory_pointer_raw AdjustPointer(memory_pointer_tr addr,
-                                        memory_pointer_raw replacement_base,
-                                        memory_pointer_tr default_base,
-                                        memory_pointer_tr default_end,
-                                        size_t max_search = 8, bool vp = true) {
+inline memory_pointer_raw AdjustPointer(memory_pointer_tr addr, memory_pointer_raw replacement_base,
+                                        memory_pointer_tr default_base, memory_pointer_tr default_end,
+                                        size_t max_search = 8, bool vp = true)
+{
     scoped_unprotect xprotect(addr, vp ? max_search + sizeof(void *) : 0);
-    for (size_t i = 0; i < max_search; ++i) {
+    for (size_t i = 0; i < max_search; ++i)
+    {
         memory_pointer_raw ptr = ReadMemory<void *>(addr + i);
-        if (ptr >= default_base.get() && ptr <= default_end.get()) {
+        if (ptr >= default_base.get() && ptr <= default_end.get())
+        {
             auto result = replacement_base + (ptr - default_base.get());
             WriteMemory<void *>(addr + i, result.get());
             return result;
@@ -405,8 +503,8 @@ inline memory_pointer_raw AdjustPointer(memory_pointer_tr addr,
  *      Gets absolute address based on relative offset @rel_value from
  * instruction that ends at @end_of_instruction
  */
-inline memory_pointer_raw
-GetAbsoluteOffset(int rel_value, memory_pointer_tr end_of_instruction) {
+inline memory_pointer_raw GetAbsoluteOffset(int rel_value, memory_pointer_tr end_of_instruction)
+{
     return end_of_instruction.get<char>() + rel_value;
 }
 
@@ -415,8 +513,8 @@ GetAbsoluteOffset(int rel_value, memory_pointer_tr end_of_instruction) {
  *      Gets relative offset based on absolute address @abs_value for
  * instruction that ends at @end_of_instruction
  */
-inline int GetRelativeOffset(memory_pointer_tr abs_value,
-                             memory_pointer_tr end_of_instruction) {
+inline int GetRelativeOffset(memory_pointer_tr abs_value, memory_pointer_tr end_of_instruction)
+{
     return uintptr_t(abs_value.get<char>() - end_of_instruction.get<char>());
 }
 
@@ -424,19 +522,16 @@ inline int GetRelativeOffset(memory_pointer_tr abs_value,
  *  ReadRelativeOffset
  *      Reads relative offset from address @at
  */
-inline memory_pointer_raw ReadRelativeOffset(memory_pointer_tr at,
-                                             size_t sizeof_addr = 4,
-                                             bool vp = true) {
-    switch (sizeof_addr) {
+inline memory_pointer_raw ReadRelativeOffset(memory_pointer_tr at, size_t sizeof_addr = 4, bool vp = true)
+{
+    switch (sizeof_addr)
+    {
     case 1:
-        return (
-            GetAbsoluteOffset(ReadMemory<int8_t>(at, vp), at + sizeof_addr));
+        return (GetAbsoluteOffset(ReadMemory<int8_t>(at, vp), at + sizeof_addr));
     case 2:
-        return (
-            GetAbsoluteOffset(ReadMemory<int16_t>(at, vp), at + sizeof_addr));
+        return (GetAbsoluteOffset(ReadMemory<int16_t>(at, vp), at + sizeof_addr));
     case 4:
-        return (
-            GetAbsoluteOffset(ReadMemory<int32_t>(at, vp), at + sizeof_addr));
+        return (GetAbsoluteOffset(ReadMemory<int32_t>(at, vp), at + sizeof_addr));
     }
     return nullptr;
 }
@@ -445,21 +540,16 @@ inline memory_pointer_raw ReadRelativeOffset(memory_pointer_tr at,
  *  MakeRelativeOffset
  *      Writes relative offset into @at based on absolute destination @dest
  */
-inline void MakeRelativeOffset(memory_pointer_tr at, memory_pointer_tr dest,
-                               size_t sizeof_addr = 4, bool vp = true) {
-    switch (sizeof_addr) {
+inline void MakeRelativeOffset(memory_pointer_tr at, memory_pointer_tr dest, size_t sizeof_addr = 4, bool vp = true)
+{
+    switch (sizeof_addr)
+    {
     case 1:
-        WriteMemory<int8_t>(
-            at, static_cast<int8_t>(GetRelativeOffset(dest, at + sizeof_addr)),
-            vp);
+        WriteMemory<int8_t>(at, static_cast<int8_t>(GetRelativeOffset(dest, at + sizeof_addr)), vp);
     case 2:
-        WriteMemory<int16_t>(
-            at, static_cast<int16_t>(GetRelativeOffset(dest, at + sizeof_addr)),
-            vp);
+        WriteMemory<int16_t>(at, static_cast<int16_t>(GetRelativeOffset(dest, at + sizeof_addr)), vp);
     case 4:
-        WriteMemory<int32_t>(
-            at, static_cast<int32_t>(GetRelativeOffset(dest, at + sizeof_addr)),
-            vp);
+        WriteMemory<int32_t>(at, static_cast<int32_t>(GetRelativeOffset(dest, at + sizeof_addr)), vp);
     }
 }
 
@@ -468,16 +558,18 @@ inline void MakeRelativeOffset(memory_pointer_tr at, memory_pointer_tr dest,
  *      Gets the destination of a branch instruction at address @at
  *      *** Works only with JMP and CALL for now ***
  */
-inline memory_pointer_raw GetBranchDestination(memory_pointer_tr at,
-                                               bool vp = true) {
-    switch (ReadMemory<uint8_t>(at, vp)) {
+inline memory_pointer_raw GetBranchDestination(memory_pointer_tr at, bool vp = true)
+{
+    switch (ReadMemory<uint8_t>(at, vp))
+    {
     // We need to handle other instructions (and prefixes) later...
     case 0xE8: // call rel
     case 0xE9: // jmp rel
         return ReadRelativeOffset(at + 1, 4, vp);
 
     case 0xFF:
-        switch (ReadMemory<uint8_t>(at + 1, vp)) {
+        switch (ReadMemory<uint8_t>(at + 1, vp))
+        {
         case 0x15: // call dword ptr [addr]
         case 0x25: // jmp dword ptr [addr]
             return *(ReadMemory<uintptr_t *>(at + 2, vp));
@@ -493,8 +585,8 @@ inline memory_pointer_raw GetBranchDestination(memory_pointer_tr at,
  *      If there was already a branch instruction there, returns the previosly
  * destination of the branch
  */
-inline memory_pointer_raw MakeJMP(memory_pointer_tr at, memory_pointer_raw dest,
-                                  bool vp = true) {
+inline memory_pointer_raw MakeJMP(memory_pointer_tr at, memory_pointer_raw dest, bool vp = true)
+{
     auto p = GetBranchDestination(at, vp);
     WriteMemory<uint8_t>(at, 0xE9, vp);
     MakeRelativeOffset(at + 1, dest, 4, vp);
@@ -507,8 +599,8 @@ inline memory_pointer_raw MakeJMP(memory_pointer_tr at, memory_pointer_raw dest,
  *      If there was already a branch instruction there, returns the previosly
  * destination of the branch
  */
-inline memory_pointer_raw MakeCALL(memory_pointer_tr at,
-                                   memory_pointer_raw dest, bool vp = true) {
+inline memory_pointer_raw MakeCALL(memory_pointer_tr at, memory_pointer_raw dest, bool vp = true)
+{
     auto p = GetBranchDestination(at, vp);
     WriteMemory<uint8_t>(at, 0xE8, vp);
     MakeRelativeOffset(at + 1, dest, 4, vp);
@@ -521,8 +613,8 @@ inline memory_pointer_raw MakeCALL(memory_pointer_tr at,
  * @dest If there was already a branch instruction there, returns the previosly
  * destination of the branch
  */
-inline void MakeJA(memory_pointer_tr at, memory_pointer_raw dest,
-                   bool vp = true) {
+inline void MakeJA(memory_pointer_tr at, memory_pointer_raw dest, bool vp = true)
+{
     WriteMemory<uint16_t>(at, 0x87F0, vp);
     MakeRelativeOffset(at + 2, dest, 4, vp);
 }
@@ -531,7 +623,8 @@ inline void MakeJA(memory_pointer_tr at, memory_pointer_raw dest,
  *  MakeNOP
  *      Creates a bunch of NOP instructions at address @at
  */
-inline void MakeNOP(memory_pointer_tr at, size_t count = 1, bool vp = true) {
+inline void MakeNOP(memory_pointer_tr at, size_t count = 1, bool vp = true)
+{
     MemoryFill(at, 0x90, count, vp);
 }
 
@@ -539,8 +632,8 @@ inline void MakeNOP(memory_pointer_tr at, size_t count = 1, bool vp = true) {
  *  MakeRangedNOP
  *      Creates a bunch of NOP instructions at address @at until address @until
  */
-inline void MakeRangedNOP(memory_pointer_tr at, memory_pointer_tr until,
-                          bool vp = true) {
+inline void MakeRangedNOP(memory_pointer_tr at, memory_pointer_tr until, bool vp = true)
+{
     return MakeNOP(at, size_t(until.get_raw<char>() - at.get_raw<char>()), vp);
 }
 
@@ -549,7 +642,8 @@ inline void MakeRangedNOP(memory_pointer_tr at, memory_pointer_tr until,
  *      Creates a RET instruction at address @at popping @pop values from the
  * stack If @pop is equal to 0 it will use the 1 byte form of the instruction
  */
-inline void MakeRET(memory_pointer_tr at, uint16_t pop = 0, bool vp = true) {
+inline void MakeRET(memory_pointer_tr at, uint16_t pop = 0, bool vp = true)
+{
     WriteMemory(at, pop ? 0xC2 : 0xC3, vp);
     if (pop)
         WriteMemory(at + 1, pop, vp);
@@ -560,16 +654,24 @@ inline void MakeRET(memory_pointer_tr at, uint16_t pop = 0, bool vp = true) {
  *      Lazy pointer, where it's final value will get evaluated only once when
  * finally needed.
  */
-template <uintptr_t addr> struct lazy_pointer {
+template <uintptr_t addr> struct lazy_pointer
+{
   public:
     // Returns the final raw pointer
-    static auto_pointer get() { return xget().get(); }
+    static auto_pointer get()
+    {
+        return xget().get();
+    }
 
-    template <class T> static T *get() { return get().template get<T>(); }
+    template <class T> static T *get()
+    {
+        return get().template get<T>();
+    }
 
   private:
     // Returns the final pointer
-    static memory_pointer_raw xget() {
+    static memory_pointer_raw xget()
+    {
         static void *ptr = nullptr;
         if (!ptr)
             ptr = memory_pointer(addr).get();
@@ -582,11 +684,14 @@ template <uintptr_t addr> struct lazy_pointer {
  *      Lazy object, where it's final object will get evaluated only once when
  * finally needed.
  */
-template <uintptr_t addr, class T> struct lazy_object {
-    static T &get() {
+template <uintptr_t addr, class T> struct lazy_object
+{
+    static T &get()
+    {
         static T data;
         static bool has_data = false;
-        if (!has_data) {
+        if (!has_data)
+        {
             ReadObject<T>(addr, data, true);
             has_data = true;
         }
@@ -598,31 +703,36 @@ template <uintptr_t addr, class T> struct lazy_object {
    Helpers
 */
 
-template <class T> inline memory_pointer mem_ptr(T p) {
+template <class T> inline memory_pointer mem_ptr(T p)
+{
     return memory_pointer(p);
 }
 
-template <class T> inline memory_pointer_raw raw_ptr(T p) {
+template <class T> inline memory_pointer_raw raw_ptr(T p)
+{
     return memory_pointer_raw(p);
 }
 
-template <class Tr>
-inline memory_pointer_raw raw_ptr(basic_memory_pointer<Tr> p) {
+template <class Tr> inline memory_pointer_raw raw_ptr(basic_memory_pointer<Tr> p)
+{
     return raw_ptr(p.get());
 }
 
-template <uintptr_t addr> inline memory_pointer_raw lazy_ptr() {
+template <uintptr_t addr> inline memory_pointer_raw lazy_ptr()
+{
     return lazy_pointer<addr>::get();
 }
 
-template <class T> inline memory_pointer_aslr aslr_ptr(T p) {
+template <class T> inline memory_pointer_aslr aslr_ptr(T p)
+{
     return memory_pointer_aslr(p);
 }
 
 #ifndef INJECTOR_GVM_OWN_DETECT // Should we implement our detection method?
 
 // Detects game, region and version; returns false if could not detect it
-inline bool game_version_manager::Detect() {
+inline bool game_version_manager::Detect()
+{
     // Cleanup data
     this->Clear();
 
@@ -633,7 +743,8 @@ inline bool game_version_manager::Detect() {
 
     // Look for game and version thought the entry-point
     // Thanks to Silent for many of the entry point offsets
-    switch (base + nt->OptionalHeader.AddressOfEntryPoint + (0x400000 - base)) {
+    switch (base + nt->OptionalHeader.AddressOfEntryPoint + (0x400000 - base))
+    {
     case 0x5C1E70: // GTA III 1.0
         game = '3', major = 1, minor = 0, region = 0, steam = false;
         return true;
@@ -663,17 +774,13 @@ inline bool game_version_manager::Detect() {
     case 0x82457C: // GTA SA 1.0 US Cracked
     case 0x824570: // GTA SA 1.0 US Compact
         game = 'S', major = 1, minor = 0, region = 'U', steam = false;
-        cracker = injector::ReadMemory<uint8_t>(raw_ptr(0x406A20), true) == 0xE9
-                      ? 'H'
-                      : 0;
+        cracker = injector::ReadMemory<uint8_t>(raw_ptr(0x406A20), true) == 0xE9 ? 'H' : 0;
         return true;
 
     case 0x8245BC: // GTA SA 1.0 EU Cracked (??????)
     case 0x8245B0: // GTA SA 1.0 EU Cracked
         game = 'S', major = 1, minor = 0, region = 'E', steam = false;
-        cracker = injector::ReadMemory<uint8_t>(raw_ptr(0x406A20), true) == 0xE9
-                      ? 'H'
-                      : 0; // just to say 'securom'
+        cracker = injector::ReadMemory<uint8_t>(raw_ptr(0x406A20), true) == 0xE9 ? 'H' : 0; // just to say 'securom'
         return true;
 
     case 0x8252FC: // GTA SA 1.1 US Cracked
@@ -690,18 +797,15 @@ inline bool game_version_manager::Detect() {
         return true;
 
     case 0xC965AD: // GTA IV 1.0.0.4 US
-        game = 'I', major = 1, minor = 0, majorRevision = 0, minorRevision = 4,
-        region = 'U', steam = false;
+        game = 'I', major = 1, minor = 0, majorRevision = 0, minorRevision = 4, region = 'U', steam = false;
         return true;
 
     case 0xD0D011: // GTA IV 1.0.0.7 US
-        game = 'I', major = 1, minor = 0, majorRevision = 0, minorRevision = 7,
-        region = 'U', steam = false;
+        game = 'I', major = 1, minor = 0, majorRevision = 0, minorRevision = 7, region = 'U', steam = false;
         return true;
 
     case 0xD0AF06: // GTA EFLC 1.1.2.0 US
-        game = 'E', major = 1, minor = 1, majorRevision = 2, minorRevision = 0,
-        region = 'U', steam = false;
+        game = 'E', major = 1, minor = 1, majorRevision = 2, minorRevision = 0, region = 'U', steam = false;
         return true;
 
     default:

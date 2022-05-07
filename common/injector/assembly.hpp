@@ -35,14 +35,15 @@
 #error Supported only in x86
 #endif
 
-static_assert(sizeof(void *) == 4, "Supported only in x86");
+// static_assert(sizeof(void *) == 4, "Supported only in x86");
 
-//
 #include "injector.hpp"
 #include <xbyak/xbyak.h>
 
-namespace injector {
-struct reg_pack {
+namespace injector
+{
+struct reg_pack
+{
     // The ordering is very important, don't change
     // The first field is the last to be pushed and first to be poped
 
@@ -52,12 +53,14 @@ struct reg_pack {
     // PUSHAD/POPAD -- must be the lastest fields (because of esp)
     union {
         uint32_t arr[8];
-        struct {
+        struct
+        {
             uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
         };
     };
 
-    enum reg_name {
+    enum reg_name
+    {
         reg_edi,
         reg_esi,
         reg_ebp,
@@ -68,7 +71,8 @@ struct reg_pack {
         reg_eax
     };
 
-    enum ef_flag {
+    enum ef_flag
+    {
         carry_flag = 0,
         parity_flag = 2,
         adjust_flag = 4,
@@ -78,23 +82,36 @@ struct reg_pack {
         overflow_flag = 11
     };
 
-    uint32_t &operator[](size_t i) { return this->arr[i]; }
-    const uint32_t &operator[](size_t i) const { return this->arr[i]; }
+    uint32_t &operator[](size_t i)
+    {
+        return this->arr[i];
+    }
+    const uint32_t &operator[](size_t i) const
+    {
+        return this->arr[i];
+    }
 
     template <uint32_t bit> // bit starts from 0, use ef_flag enum
-    bool flag() {
+    bool flag()
+    {
         return (this->ef & (1 << bit)) != 0;
     }
 
-    bool jnb() { return flag<carry_flag>() == false; }
+    bool jnb()
+    {
+        return flag<carry_flag>() == false;
+    }
 };
 
 // Lowest level stuff (actual assembly) goes on the following namespace
 // PRIVATE! Skip this, not interesting for you.
-namespace injector_asm {
+namespace injector_asm
+{
 // Wrapper functor, so the assembly can use some templating
-template <class T> struct wrapper {
-    static void call(reg_pack *regs) {
+template <class T> struct wrapper
+{
+    static void call(reg_pack *regs)
+    {
         T fun;
         fun(*regs);
     }
@@ -133,7 +150,8 @@ template <class T> struct wrapper {
 
 // Constructs a reg_pack and calls the wrapper functor
 template <class W> // where W is of type wrapper
-const uint8_t *make_reg_pack_and_call_gen() {
+const uint8_t *make_reg_pack_and_call_gen()
+{
     using namespace Xbyak::util;
 
     static Xbyak::CodeGenerator cg;
@@ -160,11 +178,11 @@ const uint8_t *make_reg_pack_and_call_gen() {
  *      Makes inline assembly (but not assembly, an actual functor of type
  * FuncT) at address
  */
-template <class FuncT> void MakeInline(memory_pointer_tr at) {
+template <class FuncT> void MakeInline(memory_pointer_tr at)
+{
     typedef injector_asm::wrapper<FuncT> functor;
     if (false)
-        functor::call(
-            nullptr); // To instantiate the template, if not done _asm will fail
+        functor::call(nullptr); // To instantiate the template, if not done _asm will fail
     MakeCALL(at, injector_asm::make_reg_pack_and_call_gen<functor>());
 }
 
@@ -173,8 +191,8 @@ template <class FuncT> void MakeInline(memory_pointer_tr at) {
  *      Same as above, but it NOPs everything between at and end (exclusive),
  * then performs MakeInline
  */
-template <class FuncT>
-void MakeInline(memory_pointer_tr at, memory_pointer_tr end) {
+template <class FuncT> void MakeInline(memory_pointer_tr at, memory_pointer_tr end)
+{
     MakeRangedNOP(at, end);
     MakeInline<FuncT>(at);
 }
@@ -185,14 +203,18 @@ void MakeInline(memory_pointer_tr at, memory_pointer_tr end) {
  *      On this case the functor can be passed as argument since there will be
  * one func instance for each at,end not just for each FuncT
  */
-template <uintptr_t at, uintptr_t end, class FuncT>
-void MakeInline(FuncT func) {
+template <uintptr_t at, uintptr_t end, class FuncT> void MakeInline(FuncT func)
+{
     static std::unique_ptr<FuncT> static_func;
     static_func.reset(new FuncT(std::move(func)));
 
     // Encapsulates the call to static_func
-    struct Caps {
-        void operator()(reg_pack &regs) { (*static_func)(regs); }
+    struct Caps
+    {
+        void operator()(reg_pack &regs)
+        {
+            (*static_func)(regs);
+        }
     };
 
     // Does the actual MakeInline
@@ -204,7 +226,8 @@ void MakeInline(FuncT func) {
  *      Same as above, but (end) is calculated by the length of a call
  * instruction
  */
-template <uintptr_t at, class FuncT> void MakeInline(FuncT func) {
+template <uintptr_t at, class FuncT> void MakeInline(FuncT func)
+{
     return MakeInline<at, at + 5, FuncT>(func);
 }
 }; // namespace injector

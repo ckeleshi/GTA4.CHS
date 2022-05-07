@@ -7,4 +7,4 @@
 [range-v3(Vcpkg)](https://github.com/ericniebler/range-v3)<br/>
 [zlib(Vcpkg)](https://github.com/madler/zlib)<br/>
 [xbyak(Vcpkg)](https://github.com/herumi/xbyak)<br/>
-[utfcpp](https://github.com/nemtrif/utfcpp)<br/>
+[utfcpp(Vcpkg)](https://github.com/nemtrif/utfcpp)<br/>

@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.15.0)
+#暂未适配GCC/Clang
+
+cmake_minimum_required(VERSION 3.13.0)
 
 cmake_policy(SET CMP0079 NEW)
 set(CMAKE_CXX_STANDARD 20)

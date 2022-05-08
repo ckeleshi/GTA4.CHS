@@ -1,8 +1,8 @@
-#暂未适配GCC/Clang
-
-cmake_minimum_required(VERSION 3.13.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 cmake_policy(SET CMP0079 NEW)
+cmake_policy(SET CMP0091 NEW) # Enable CMAKE_MSVC_RUNTIME_LIBRARY
+
 set(CMAKE_CXX_STANDARD 20)
 
 # Set vcpkg toolchain file in global settings.json
@@ -12,7 +12,7 @@ set(CMAKE_GENERATOR_PLATFORM "Win32")
 
 project(gta4_chs)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Debug>:DLL>")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 include("VC-LTL helper for cmake.cmake")
 
 file(GLOB common_sources "common/*.cpp")

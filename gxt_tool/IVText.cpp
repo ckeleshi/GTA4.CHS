@@ -1,32 +1,31 @@
 ﻿#include "IVText.h"
+#include "../common/char8_t-remediation.h"
 #include "../common/fnv_hash.h"
 #include "../common/module_path.h"
-#include "../common/char8_t-remediation.h"
 
-void IVText::ProcessT2B(const PathType& inFolder, const PathType& outFolder)
+
+void IVText::ProcessT2B(const PathType &inFolder, const PathType &outFolder)
 {
     create_directories(outFolder);
     LoadTexts(inFolder);
     GenerateBinary(outFolder / "chinese.gxt");
 }
 
-void IVText::ProcessB2T(const PathType& inFile, const PathType& outFolder)
+void IVText::ProcessB2T(const PathType &inFile, const PathType &outFolder)
 {
     create_directories(outFolder);
     LoadBinary(inFile);
     GenerateTexts(outFolder);
 }
 
-void IVText::ProcessCollect(const PathType& inFolder, const PathType& outFolder)
+void IVText::ProcessCollect(const PathType &inFolder, const PathType &outFolder)
 {
     std::set<char32_t> chars; //文本中出现的非原版字符集合
 
     create_directories(outFolder);
 
-    ProcessTexts(inFolder, true, [&chars](const std::string& filename, std::ifstream& stream)
-        {
-            CollectCharsFunc(stream, chars);
-        });
+    ProcessTexts(inFolder, true,
+                 [&chars](const std::string &filename, std::ifstream &stream) { CollectCharsFunc(stream, chars); });
 
     GenerateCollection(outFolder / "characters.txt", chars);
     GenerateTable(outFolder / "char_table.dat", chars);
@@ -43,13 +42,13 @@ bool IVText::IsNativeCharacter(char32_t character)
     return (character < 0x100 || character == L'™');
 }
 
-void IVText::ProcessTexts(const PathType& inFolder, bool recursive, const FuncType& func)
+void IVText::ProcessTexts(const PathType &inFolder, bool recursive, const FuncType &func)
 {
-    std::vector<std::string> filenames;
+    std::vector<PathType> filenames;
 
     if (recursive)
     {
-        std::filesystem::recursive_directory_iterator dir_it{ inFolder };
+        std::filesystem::recursive_directory_iterator dir_it{inFolder};
 
         while (dir_it != std::filesystem::recursive_directory_iterator{})
         {
@@ -57,7 +56,7 @@ void IVText::ProcessTexts(const PathType& inFolder, bool recursive, const FuncTy
 
             if (path.extension() == ".txt")
             {
-                filenames.push_back(path.string());
+                filenames.push_back(path);
             }
 
             ++dir_it;
@@ -65,7 +64,7 @@ void IVText::ProcessTexts(const PathType& inFolder, bool recursive, const FuncTy
     }
     else
     {
-        std::filesystem::directory_iterator dir_it{ inFolder };
+        std::filesystem::directory_iterator dir_it{inFolder};
 
         while (dir_it != std::filesystem::directory_iterator{})
         {
@@ -73,14 +72,14 @@ void IVText::ProcessTexts(const PathType& inFolder, bool recursive, const FuncTy
 
             if (path.extension() == ".txt")
             {
-                filenames.push_back(path.string());
+                filenames.push_back(path);
             }
 
             ++dir_it;
         }
     }
 
-    for (auto& filename : filenames)
+    for (auto &filename : filenames)
     {
         std::ifstream ifs(filename);
 
@@ -89,16 +88,16 @@ void IVText::ProcessTexts(const PathType& inFolder, bool recursive, const FuncTy
             continue;
         }
 
-        func(filename, ifs);
+        func(filename.string(), ifs);
     }
 }
 
-void IVText::LoadTextFunc(const std::string& filename, std::ifstream& stream)
+void IVText::LoadTextFunc(const std::string &filename, std::ifstream &stream)
 {
     std::regex table_regex(R"(\[([0-9a-zA-Z_]{1,7})\])");
     std::regex entry_regex(R"((0[xX][0-9a-fA-F]{8})=(.*))");
 
-    std::match_results<const char*> matches;
+    std::match_results<const char *> matches;
 
     std::string line;
 
@@ -142,7 +141,7 @@ void IVText::LoadTextFunc(const std::string& filename, std::ifstream& stream)
         {
             if (table_iter != m_Data.end())
             {
-                auto& table_cont = table_iter->second;
+                auto &table_cont = table_iter->second;
                 auto hash_string = matches.str(1);
 
                 if (table_cont.empty() || table_cont.back().hash_string != hash_string)
@@ -182,7 +181,7 @@ void IVText::LoadTextFunc(const std::string& filename, std::ifstream& stream)
     }
 }
 
-void IVText::CollectCharsFunc(std::ifstream& stream, std::set<char32_t>& chars)
+void IVText::CollectCharsFunc(std::ifstream &stream, std::set<char32_t> &chars)
 {
     std::vector<char> u8_buffer;
     std::vector<char32_t> u32_buffer;
@@ -199,15 +198,13 @@ void IVText::CollectCharsFunc(std::ifstream& stream, std::set<char32_t>& chars)
     }
 }
 
-void IVText::LoadTexts(const PathType& inFolder)
+void IVText::LoadTexts(const PathType &inFolder)
 {
-    ProcessTexts(inFolder, false, [this](const std::string& filename, std::ifstream& stream)
-        {
-            LoadTextFunc(filename, stream);
-        });
+    ProcessTexts(inFolder, false,
+                 [this](const std::string &filename, std::ifstream &stream) { LoadTextFunc(filename, stream); });
 }
 
-void IVText::GenerateBinary(const PathType& output_binary) const
+void IVText::GenerateBinary(const PathType &output_binary) const
 {
     BinaryFile file(output_binary, "wb");
 
@@ -260,7 +257,7 @@ void IVText::GenerateBinary(const PathType& output_binary) const
 
     tables.clear();
 
-    for (auto& table : m_Data)
+    for (auto &table : m_Data)
     {
         keys.clear();
         datas.clear();
@@ -272,16 +269,18 @@ void IVText::GenerateBinary(const PathType& output_binary) const
         strcpy(keyBlock.Name, table.first.c_str());
         keyBlock.Body.Size = table.second.size() * sizeof(KeyEntry);
 
-        for (auto& entry : table.second)
+        for (auto &entry : table.second)
         {
             if (entry.hash_string.empty() || entry.original.empty() || entry.translated.empty())
             {
-                std::printf(U8("遇到缺失的文本项:\nhash_string: %s\noriginal: %s\ntranslated: %s\n\n"), entry.hash_string.c_str(), entry.original.c_str(), entry.translated.c_str());
+                std::printf(U8("遇到缺失的文本项:\nhash_string: %s\noriginal: %s\ntranslated: %s\n\n"),
+                            entry.hash_string.c_str(), entry.original.c_str(), entry.translated.c_str());
             }
 
             if (!CompareTokens(entry.original, entry.translated))
             {
-                std::printf(U8("遇到Token与原文不一致的译文:\nhash_string: %s\noriginal: %s\ntranslated: %s\n\n"), entry.hash_string.c_str(), entry.original.c_str(), entry.translated.c_str());
+                std::printf(U8("遇到Token与原文不一致的译文:\nhash_string: %s\noriginal: %s\ntranslated: %s\n\n"),
+                            entry.hash_string.c_str(), entry.original.c_str(), entry.translated.c_str());
             }
 
             keyEntry.Hash = std::stoul(entry.hash_string, nullptr, 16);
@@ -317,7 +316,7 @@ void IVText::GenerateBinary(const PathType& output_binary) const
     file.WriteArray(tables);
 }
 
-void IVText::GenerateCollection(const PathType& outFile, const std::set<char32_t>& chars)
+void IVText::GenerateCollection(const PathType &outFile, const std::set<char32_t> &chars)
 {
     size_t count = 0;
     u8StringType u8_text;
@@ -340,13 +339,13 @@ void IVText::GenerateCollection(const PathType& outFile, const std::set<char32_t
     std::copy_n(u8_text.c_str(), u8_text.size(), std::ostreambuf_iterator(stream));
 }
 
-void IVText::GenerateTable(const PathType& outFile, const std::set<char32_t>& chars)
+void IVText::GenerateTable(const PathType &outFile, const std::set<char32_t> &chars)
 {
     BinaryFile stream(outFile, "wb");
     stream.WriteArray2(ranges::to_vector(chars));
 }
 
-IVText::wStringType IVText::U8ToWide(const u8StringType& u8_string)
+IVText::wStringType IVText::U8ToWide(const u8StringType &u8_string)
 {
     wStringType result;
 
@@ -357,7 +356,7 @@ IVText::wStringType IVText::U8ToWide(const u8StringType& u8_string)
     return result;
 }
 
-IVText::u8StringType IVText::WideToU8(const wStringType& wide_string)
+IVText::u8StringType IVText::WideToU8(const wStringType &wide_string)
 {
     u8StringType result;
 
@@ -369,12 +368,12 @@ IVText::u8StringType IVText::WideToU8(const wStringType& wide_string)
     return result;
 }
 
-void IVText::FixCharacters(wStringType& wtext)
+void IVText::FixCharacters(wStringType &wtext)
 {
-    //bad character in IV stock text: 0x85 0x92 0x94 0x96 0x97 0xA0
-    //bad character in EFLC stock text: 0x93
+    // bad character in IV stock text: 0x85 0x92 0x94 0x96 0x97 0xA0
+    // bad character in EFLC stock text: 0x93
 
-    for (auto& character : wtext)
+    for (auto &character : wtext)
     {
         switch (character)
         {
@@ -387,7 +386,7 @@ void IVText::FixCharacters(wStringType& wtext)
             character = L'\'';
             break;
 
-        case 0x93: //EFLC
+        case 0x93: // EFLC
             break;
 
         case 0x96:
@@ -405,9 +404,9 @@ void IVText::FixCharacters(wStringType& wtext)
     }
 }
 
-void IVText::LiteralToGame(wStringType& wtext)
+void IVText::LiteralToGame(wStringType &wtext)
 {
-    for (auto& character : wtext)
+    for (auto &character : wtext)
     {
         switch (character)
         {
@@ -421,9 +420,9 @@ void IVText::LiteralToGame(wStringType& wtext)
     }
 }
 
-void IVText::GameToLiteral(wStringType& wtext)
+void IVText::GameToLiteral(wStringType &wtext)
 {
-    for (auto& character : wtext)
+    for (auto &character : wtext)
     {
         switch (character)
         {
@@ -437,7 +436,7 @@ void IVText::GameToLiteral(wStringType& wtext)
     }
 }
 
-std::set<std::string> IVText::CollectTokens(const std::string& str)
+std::set<std::string> IVText::CollectTokens(const std::string &str)
 {
     std::set<std::string> result;
 
@@ -475,20 +474,24 @@ std::set<std::string> IVText::CollectTokens(const std::string& str)
     }
 
     //提取每个token
-    for (std::vector<std::string::size_type>::size_type token_index = 0; token_index < wave_token_indexes.size() / 2; ++token_index)
+    for (std::vector<std::string::size_type>::size_type token_index = 0; token_index < wave_token_indexes.size() / 2;
+         ++token_index)
     {
-        result.emplace(str, wave_token_indexes[token_index * 2], wave_token_indexes[token_index * 2 + 1] - wave_token_indexes[token_index * 2] + 1);
+        result.emplace(str, wave_token_indexes[token_index * 2],
+                       wave_token_indexes[token_index * 2 + 1] - wave_token_indexes[token_index * 2] + 1);
     }
 
-    for (std::vector<std::string::size_type>::size_type token_index = 0; token_index < html_token_indexes.size() / 2; ++token_index)
+    for (std::vector<std::string::size_type>::size_type token_index = 0; token_index < html_token_indexes.size() / 2;
+         ++token_index)
     {
-        result.emplace(str, html_token_indexes[token_index * 2], html_token_indexes[token_index * 2 + 1] - html_token_indexes[token_index * 2] + 1);
+        result.emplace(str, html_token_indexes[token_index * 2],
+                       html_token_indexes[token_index * 2 + 1] - html_token_indexes[token_index * 2] + 1);
     }
 
     return result;
 }
 
-bool IVText::CompareTokens(const std::string& s1, const std::string& s2)
+bool IVText::CompareTokens(const std::string &s1, const std::string &s2)
 {
     auto token1 = CollectTokens(s1);
     auto token2 = CollectTokens(s2);
@@ -498,7 +501,7 @@ bool IVText::CompareTokens(const std::string& s1, const std::string& s2)
         return false;
     }
 
-    for (auto& token : token1)
+    for (auto &token : token1)
     {
         if (!token2.contains(token))
         {
@@ -509,7 +512,7 @@ bool IVText::CompareTokens(const std::string& s1, const std::string& s2)
     return true;
 }
 
-void IVText::LoadBinary(const PathType& inFile)
+void IVText::LoadBinary(const PathType &inFile)
 {
     GXTHeader gxtHeader;
     TableBlock tableBlock;
@@ -538,7 +541,7 @@ void IVText::LoadBinary(const PathType& inFile)
 
     file.ReadArray(tableBlock.Size / sizeof(TableEntry), tables);
 
-    for (TableEntry& table : tables)
+    for (TableEntry &table : tables)
     {
         tableIter = m_Data.emplace(table.Name, std::vector<TextEntry>()).first;
 
@@ -559,7 +562,7 @@ void IVText::LoadBinary(const PathType& inFile)
 
         file.ReadArray(tdatHeader.Size / 2, datas);
 
-        for (auto& key : keys)
+        for (auto &key : keys)
         {
             wStringType w_string;
             TextEntry entry;
@@ -585,13 +588,13 @@ void IVText::LoadBinary(const PathType& inFile)
     }
 }
 
-void IVText::GenerateTexts(const PathType& output_texts) const
+void IVText::GenerateTexts(const PathType &output_texts) const
 {
     std::ofstream stream;
     std::string line;
     std::vector<char> buffer(4096);
 
-    for (auto& table : m_Data)
+    for (auto &table : m_Data)
     {
         stream.open(output_texts / (table.first + ".txt"), std::ios::trunc);
 
@@ -605,7 +608,7 @@ void IVText::GenerateTexts(const PathType& output_texts) const
         std::sprintf(buffer.data(), "[%s]\n", table.first.c_str());
         stream << buffer.data();
 
-        for (auto& entry : table.second)
+        for (auto &entry : table.second)
         {
             std::sprintf(buffer.data(), "%s=%s\n", entry.hash_string.c_str(), entry.translated.c_str());
             line = buffer.data();

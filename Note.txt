@@ -36,9 +36,3 @@ xmm4: 90.0094
 xmm5: 78.475
 xmm6: 129.701
 xmm7: 76.9347
-
-R6AUD: 0x7555CEB7 字幕不居中
-
-MAIN: 0x9899E5EE
-
-考虑迁移成cmake+vscode+vcpkg项目

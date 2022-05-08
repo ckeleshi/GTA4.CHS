@@ -1,17 +1,17 @@
 ﻿#include "../common/stdinc.h"
 #include "IVText.h"
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-    //GXTTool -b2t american.gxt D:/text
-    //GXTTool -t2b D:/text D:/binary
-    //GXTTool -collect D:/text D:/collection
+    // GXTTool -b2t american.gxt D:/text
+    // GXTTool -t2b D:/text D:/binary
+    // GXTTool -collect D:/text D:/collection
 
     IVText instance;
 
     if (argc == 4)
     {
-        if (std::strcmp(argv[1],"-b2t") == 0)
+        if (std::strcmp(argv[1], "-b2t") == 0)
         {
             instance.ProcessB2T(argv[2], argv[3]);
         }
@@ -26,7 +26,11 @@ int main(int argc, char** argv)
     }
     else
     {
+#ifdef _DEBUG
+        instance.ProcessT2B(R"(D:\Games\GTA4\GTA4汉化\text\GTAIV\text)", R"(D:\Games\GTA4\GTA4汉化\text\GTAIV_Out)");
+#else
         std::printf("打开方式不对。\n");
+#endif
     }
 
     return 0;

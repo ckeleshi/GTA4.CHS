@@ -5,8 +5,7 @@
 
 #pragma warning(disable : 4244)
 
-#define VALIDATE_SIZE(expr, size)                                              \
-    static_assert(sizeof(expr) == (size), "Wrong size.")
+#define VALIDATE_SIZE(expr, size) static_assert(sizeof(expr) == (size), "Wrong size.")
 
 #include <Windows.h>
 #include <algorithm>
@@ -40,9 +39,7 @@
 // vcpkg
 #include <range/v3/all.hpp>
 #include <utf8cpp/utf8.h>
-#include <xbyak/xbyak.h>
 #include <zlib.h>
-
 
 typedef unsigned char uint8;
 typedef unsigned char uchar;

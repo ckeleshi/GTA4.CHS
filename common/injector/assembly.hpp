@@ -38,7 +38,6 @@
 // static_assert(sizeof(void *) == 4, "Supported only in x86");
 
 #include "injector.hpp"
-#include <xbyak/xbyak.h>
 
 namespace injector
 {
@@ -117,60 +116,31 @@ template <class T> struct wrapper
     }
 };
 
-// Constructs a reg_pack and calls the wrapper functor
-// template <class W> // where W is of type wrapper
-// inline void __declspec(naked) make_reg_pack_and_call() {
-//    _asm
-//    {
-//        // Construct the reg_pack structure on the stack
-//                pushad // Pushes general purposes registers to reg_pack
-//                add dword ptr[esp+12], 4 // Add 4 to reg_pack::esp 'cuz of our
-//                return pointer, let it be as
-//          // before this func is called
-//                pushfd // Pushes EFLAGS to reg_pack
-//
-//            // Call wrapper sending reg_pack as parameter
-//                push esp
-//                call W::call
-//                add esp, 4
-//
-//        // Destructs the reg_pack from the stack
-//                sub dword ptr[esp+12+4], 4     // Fix reg_pack::esp before
-//                popping it (doesn't make a difference
-//          // though) (+4 because eflags)
-//                popfd // Warning: Do not use any instruction that changes
-//                EFLAGS after
-//              // this (-> sub affects EF!! <-)
-//                popad
-//
-//                // Back to normal flow
-//                ret
-//    }
-//}
-
-// Constructs a reg_pack and calls the wrapper functor
-template <class W> // where W is of type wrapper
-const uint8_t *make_reg_pack_and_call_gen()
+// Constructs a reg_pack and calls the wrapper functor where W is of type wrapper
+template <class W> void __declspec(naked) make_reg_pack_and_call()
 {
-    using namespace Xbyak::util;
+    _asm
+    {
+        // Construct the reg_pack structure on the stack
+                pushad // Pushes general purposes registers to reg_pack
+                add dword ptr[esp+12], 4 // Add 4 to reg_pack::esp 'cuz of our return pointer, let it be as before this func is called
+                pushfd // Pushes EFLAGS to reg_pack
 
-    static Xbyak::CodeGenerator cg;
+            // Call wrapper sending reg_pack as parameter
+                push esp
+                call W::call
+                add esp, 4
 
-    cg.reset();
+        // Destructs the reg_pack from the stack
+                sub dword ptr[esp+12+4], 4 // Fix reg_pack::esp before popping it (doesn't make a difference though) (+4 because eflags)
+                popfd // Warning: Do not use any instruction that changes EFLAGS after this (-> sub affects EF!! <-)
+                popad
 
-    cg.pushad();
-    cg.add(dword[esp + 12], 4);
-    cg.pushfd();
-    cg.push(esp);
-    cg.call(W::call);
-    cg.add(esp, 4);
-    cg.sub(dword[esp + 12 + 4], 4);
-    cg.popfd();
-    cg.popad();
-    cg.ret();
-
-    return cg.getCode();
+                // Back to normal flow
+                ret
+    }
 }
+
 }; // namespace injector_asm
 
 /*
@@ -183,7 +153,7 @@ template <class FuncT> void MakeInline(memory_pointer_tr at)
     typedef injector_asm::wrapper<FuncT> functor;
     if (false)
         functor::call(nullptr); // To instantiate the template, if not done _asm will fail
-    MakeCALL(at, injector_asm::make_reg_pack_and_call_gen<functor>());
+    MakeCALL(at, injector_asm::make_reg_pack_and_call<functor>);
 }
 
 /*

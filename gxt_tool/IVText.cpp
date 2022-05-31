@@ -1,8 +1,6 @@
 ﻿#include "IVText.h"
-#include "../common/char8_t-remediation.h"
 #include "../common/fnv_hash.h"
 #include "../common/module_path.h"
-
 
 void IVText::ProcessT2B(const PathType &inFolder, const PathType &outFolder)
 {
@@ -35,7 +33,7 @@ bool IVText::IsNativeCharacter(char32_t character)
 {
     if (character > 0xFFFF)
     {
-        std::printf("Invalid code point: %u larger than 0xFFFF.\n", static_cast<unsigned>(character));
+        fmt::printf("Invalid code point: %u larger than 0xFFFF.\n", static_cast<unsigned>(character));
         return false;
     }
 
@@ -166,17 +164,17 @@ void IVText::LoadTextFunc(const std::string &filename, std::ifstream &stream)
 
                 if (!is_original && (ranges::count(b_string, '~') & 1) == 1)
                 {
-                    std::printf(U8("%s: 第%u行的\'~\'个数不是偶数!\n"), filename.c_str(), line_no);
+                    fmt::printf("%s: 第%u行的\'~\'个数不是偶数!\n", filename, line_no);
                 }
             }
             else
             {
-                std::printf(U8("%s: 第%u行没有所属的表。\n"), filename.c_str(), line_no);
+                fmt::printf("%s: 第%u行没有所属的表。\n", filename, line_no);
             }
         }
         else
         {
-            std::printf(U8("%s: 第%u行无法识别。\n"), filename.c_str(), line_no);
+            fmt::printf("%s: 第%u行无法识别。\n", filename, line_no);
         }
     }
 }
@@ -227,7 +225,7 @@ void IVText::GenerateBinary(const PathType &output_binary) const
 
     if (!file)
     {
-        std::printf(U8("创建输出文件 %s 失败。\n"), output_binary.string().c_str());
+        fmt::printf("创建输出文件 %s 失败。\n", output_binary.string());
         return;
     }
 
@@ -273,14 +271,12 @@ void IVText::GenerateBinary(const PathType &output_binary) const
         {
             if (entry.hash_string.empty() || entry.original.empty() || entry.translated.empty())
             {
-                std::printf(U8("遇到缺失的文本项:\nhash_string: %s\noriginal: %s\ntranslated: %s\n\n"),
-                            entry.hash_string.c_str(), entry.original.c_str(), entry.translated.c_str());
+                fmt::printf("遇到缺失的文本项:\nhash_string: %s\n\n", entry.hash_string);
             }
 
             if (!CompareTokens(entry.original, entry.translated))
             {
-                std::printf(U8("遇到Token与原文不一致的译文:\nhash_string: %s\noriginal: %s\ntranslated: %s\n\n"),
-                            entry.hash_string.c_str(), entry.original.c_str(), entry.translated.c_str());
+                fmt::printf("遇到Token与原文不一致的译文:\nhash_string: %s\n\n", entry.hash_string);
             }
 
             keyEntry.Hash = std::stoul(entry.hash_string, nullptr, 16);
@@ -531,7 +527,7 @@ void IVText::LoadBinary(const PathType &inFile)
 
     if (!file)
     {
-        std::printf(U8("打开输入文件 %s 失败。\n"), inFile.string().c_str());
+        fmt::printf("打开输入文件 %s 失败。\n", inFile.string());
         return;
     }
 
@@ -566,10 +562,8 @@ void IVText::LoadBinary(const PathType &inFile)
         {
             wStringType w_string;
             TextEntry entry;
-            char buffer[20];
 
-            std::sprintf(buffer, "0x%08X", key.Hash);
-            entry.hash_string = buffer;
+            entry.hash_string = fmt::sprintf("0x%08X", key.Hash);
             auto offset = key.Offset / 2;
 
             while (datas[offset] != 0)
@@ -592,7 +586,6 @@ void IVText::GenerateTexts(const PathType &output_texts) const
 {
     std::ofstream stream;
     std::string line;
-    std::vector<char> buffer(4096);
 
     for (auto &table : m_Data)
     {
@@ -600,18 +593,16 @@ void IVText::GenerateTexts(const PathType &output_texts) const
 
         if (!stream)
         {
-            std::printf(U8("创建输出文件失败\n"));
+            fmt::printf("创建输出文件失败\n");
         }
 
         stream.write("\xEF\xBB\xBF", 3);
 
-        std::sprintf(buffer.data(), "[%s]\n", table.first.c_str());
-        stream << buffer.data();
+        stream << fmt::sprintf("[%s]\n", table.first);
 
         for (auto &entry : table.second)
         {
-            std::sprintf(buffer.data(), "%s=%s\n", entry.hash_string.c_str(), entry.translated.c_str());
-            line = buffer.data();
+            line = fmt::sprintf("%s=%s\n", entry.hash_string, entry.translated);
             stream << ';' << line << line << '\n';
         }
 

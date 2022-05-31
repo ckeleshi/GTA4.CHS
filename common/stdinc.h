@@ -37,6 +37,7 @@
 #include "injector/injector.hpp"
 
 // vcpkg
+#include <fmt/printf.h>
 #include <range/v3/all.hpp>
 #include <utf8cpp/utf8.h>
 #include <zlib.h>

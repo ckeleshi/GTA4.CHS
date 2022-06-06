@@ -13,6 +13,7 @@ set(CMAKE_GENERATOR_PLATFORM "Win32")
 project(gta4_chs)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 include("VC-LTL helper for cmake.cmake")
 
 file(GLOB common_sources "common/*.cpp")

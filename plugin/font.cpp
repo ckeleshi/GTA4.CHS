@@ -5,10 +5,10 @@
 static const float fChsWidth = 32.0f;
 static const float fChsWidthFix = -1.0f;
 static const float fSpriteWidth = 64.0f;
-static const float fSpriteHeight = 80.0f;
+static const float fSpriteHeight = 66.0f;
 static const float fTextureResolution = 4096.0f;
-static const float fTextureRowsCount = 51.2f;
-static const float fTextureColumnsCount = 64.0f;
+static const float fTextureRowsCount = fTextureResolution / fSpriteHeight;
+static const float fTextureColumnsCount = fTextureResolution / fSpriteWidth;
 static const float fRatio = 4.0f;
 
 static grcTexturePC *pChsTexture;
@@ -361,32 +361,67 @@ float CFont::GetCharacterSizeDrawingDispatch(GTAChar chr, bool use_extra_width)
 
 void CFont::PrintCHSChar(float x, float y, GTAChar chr)
 {
-    CRect screen_rect, texture_rect;
-
     auto [row, column] = plugin.char_table.GetCharPos(chr);
     auto render_state = plugin.game.game_addr.pFont_RenderState;
 
-    float texture_sprite_width = fSpriteWidth / fTextureResolution;
+    //原版游戏实际截取的图块在64*80格子中的坐标是
+    // x 0.0
+    // y 4.4
+    // w 64.0
+    // h 78.4912
 
-    float screen_character_width =
+    //通过尝试得出的relative_char_rect在64*78.4912矩形中的偏移
+    float x_delta = 0.0f;
+    float y_delta = 60.0f;
+
+    //先计算字符图片在64*78.4912矩形内的位置
+    CRect relative_char_rect;
+    relative_char_rect.bottom_left.x = x_delta;
+    relative_char_rect.top_right.x = relative_char_rect.bottom_left.x + fSpriteWidth;
+    relative_char_rect.top_right.y = y_delta;
+    relative_char_rect.bottom_left.y = relative_char_rect.top_right.y + fSpriteHeight;
+
+    //截取纹理的位置
+    CRect texture_rect;
+    texture_rect.bottom_left.x = static_cast<float>(column) * fSpriteWidth / fTextureResolution;
+    texture_rect.bottom_left.y = static_cast<float>(row + 1) * fSpriteHeight / fTextureResolution;
+    texture_rect.top_right.x = static_cast<float>(column + 1) * fSpriteWidth / fTextureResolution;
+    texture_rect.top_right.y = static_cast<float>(row) * fSpriteHeight / fTextureResolution;
+
+    float old_screen_character_width =
         (fChsWidth / *plugin.game.game_addr.pFont_ResolutionX + render_state->fEdgeSize) * render_state->fScaleX;
 
-    float screen_character_height = render_state->fScaleY * 0.06558f;
+    float old_screen_character_height = render_state->fScaleY * 0.06558f;
 
-    screen_rect.bottom_left.x = x;
-    screen_rect.bottom_left.y = y + screen_character_height;
-    screen_rect.top_right.x = x + screen_character_width;
-    screen_rect.top_right.y = y;
+    // 64*78.4912图块在屏幕上的位置
+    CRect old_screen_rect;
+    old_screen_rect.bottom_left.x = x;
+    old_screen_rect.bottom_left.y = y + old_screen_character_height;
+    old_screen_rect.top_right.x = x + old_screen_character_width;
+    old_screen_rect.top_right.y = y;
 
-    texture_rect.top_right.y = (row - 0.045f) * fSpriteHeight / fTextureResolution + 8.0f / fTextureResolution;
-    if (texture_rect.top_right.y > 1.0f)
-    {
-        texture_rect.top_right.y = 1.0f;
-    }
-    texture_rect.bottom_left.y = (row - 0.045f) * fSpriteHeight / fTextureResolution + 79.0f / fTextureResolution -
-                                 0.001f / fRatio + 0.0048f / fRatio;
-    texture_rect.bottom_left.x = column / fTextureColumnsCount;
-    texture_rect.top_right.x = column / fTextureColumnsCount + texture_sprite_width;
+    auto flt_proj = [](float old_lb, float old_ub, float old_val, float new_lb, float new_ub) {
+        auto old_range = old_ub - old_lb;
+        auto old_diff = old_val - old_lb;
+        auto new_range = new_ub - new_lb;
+
+        return old_diff / old_range * new_range + new_lb;
+    };
+
+    //将virtual_char_rect投影到old_screen_rect中，得到real_screen_rect
+    CRect real_screen_rect;
+
+    real_screen_rect.top_right.x = flt_proj(0.0f, 64.0f, relative_char_rect.top_right.x, old_screen_rect.bottom_left.x,
+                                            old_screen_rect.top_right.x);
+
+    real_screen_rect.top_right.y = flt_proj(0.0f, 78.4912f, relative_char_rect.top_right.y, old_screen_rect.top_right.y,
+                                            old_screen_rect.bottom_left.y);
+
+    real_screen_rect.bottom_left.x = flt_proj(0.0f, 64.0f, relative_char_rect.bottom_left.x,
+                                              old_screen_rect.bottom_left.x, old_screen_rect.top_right.x);
+
+    real_screen_rect.bottom_left.y = flt_proj(0.0f, 78.4912f, relative_char_rect.bottom_left.y,
+                                              old_screen_rect.top_right.y, old_screen_rect.bottom_left.y);
 
     switch (render_state->nFont)
     {
@@ -400,7 +435,7 @@ void CFont::PrintCHSChar(float x, float y, GTAChar chr)
         break;
     }
 
-    plugin.game.Font_Render2DPrimitive(&screen_rect, &texture_rect, render_state->field_18, false);
+    plugin.game.Font_Render2DPrimitive(&real_screen_rect, &texture_rect, render_state->field_18, false);
 }
 
 void CFont::PrintCharDispatch(float x, float y, GTAChar chr, bool buffered)

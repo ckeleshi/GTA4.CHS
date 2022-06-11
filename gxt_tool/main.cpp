@@ -26,11 +26,7 @@ int main(int argc, char **argv)
     }
     else
     {
-#ifdef _DEBUG
-        instance.ProcessT2B(R"(D:\Games\GTA4\GTA4汉化\text\GTAIV\text)", R"(D:\Games\GTA4\GTA4汉化\text\GTAIV_Out)");
-#else
-        std::printf("打开方式不对。\n");
-#endif
+        fmt::printf("打开方式不对。\n");
     }
 
     return 0;

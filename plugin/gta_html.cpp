@@ -40,15 +40,8 @@ void register_patches(batch_matching &batch_matcher)
 
     // Native: GET_WEB_PAGE_LINK_AT_POSN(C1C5B1B)的判断逻辑，跟30.0比较
     batch_matcher.register_step("F3 0F 10 5A 24 72 5C", 1, [](const byte_pattern::result_type &addresses) {
-#if 1
         // 5D6CE0
         injector::WriteMemory<uchar>(addresses[0].i(5), 0xEBu, true);
-#else
-                static const float min_link_width = 5.0f;
-
-                injector::WriteMemory(addresses[0].i(0xCD6 - 0xCF4), &min_link_width, true);
-                injector::WriteMemory(addresses[0].i(0xD53 - 0xCF4), &min_link_width, true);
-#endif
     });
 
     // IDA Names: const CHtmlTextFormat::`vftable'
@@ -57,7 +50,7 @@ void register_patches(batch_matching &batch_matcher)
     batch_matcher.register_step("F3 0F 5C 4B 04 0F 2E C1 9F F6 C4 44 7B 27", 1,
                                 [](const byte_pattern::result_type &addresses) {
                                     // 5D9B43
-                                    // injector::WriteMemory<uchar>(addresses[0].i(12), 0xEBu, true);
+                                    injector::WriteMemory<uchar>(addresses[0].i(12), 0xEBu, true);
                                 });
 
     // batch_matcher.register_step("", 1, [](const byte_pattern::result_type& addresses)

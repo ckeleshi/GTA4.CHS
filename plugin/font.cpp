@@ -372,7 +372,7 @@ void CFont::PrintCHSChar(float x, float y, GTAChar chr)
 
     //通过尝试得出的relative_char_rect在64*78.4912矩形中的偏移
     float x_delta = 0.0f;
-    float y_delta = 60.0f;
+    float y_delta = 5.0f;
 
     //先计算字符图片在64*78.4912矩形内的位置
     CRect relative_char_rect;

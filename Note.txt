@@ -1,4 +1,9 @@
-﻿-----------issue list-----------
+﻿-----------todo-----------
+改成免覆盖字库(libpng+libsquish+grcTexturePC)，避免R星校验机制影响
+研究第二次启动游戏时汉化失效的问题
+craplist.net邮件排版问题
+
+-----------issue list-----------
 5D6D57: 
 xmm1: 链接区域w
 xmm3: 链接区域h

@@ -12,6 +12,7 @@ static const float fTextureColumnsCount = fTextureResolution / fSpriteWidth;
 static const float fRatio = 4.0f;
 
 static grcTexturePC *pChsTexture;
+static grcTexturePC *pChsLC, *pChsTBoGT, *pChsTLAD;
 
 const GTAChar *CFont::SkipWord_Prolog(std::uintptr_t address)
 {

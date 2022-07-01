@@ -1,10 +1,5 @@
 ﻿#pragma once
 
-#define _CRT_SECURE_NO_WARNINGS
-#define NOMINMAX
-
-#pragma warning(disable : 4244)
-
 #define VALIDATE_SIZE(expr, size) static_assert(sizeof(expr) == (size), "Wrong size.")
 
 #include <Windows.h>
@@ -15,6 +10,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <d3d9.h>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -38,7 +34,9 @@
 
 // vcpkg
 #include <fmt/printf.h>
+#include <png.h>
 #include <range/v3/all.hpp>
+#include <squish.h>
 #include <utf8cpp/utf8.h>
 #include <zlib.h>
 

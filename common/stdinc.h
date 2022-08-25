@@ -48,3 +48,4 @@ typedef unsigned int uint;
 typedef unsigned int uint32;
 typedef unsigned long long ulonglong;
 typedef unsigned long long uint64;
+typedef std::filesystem::path tPath;

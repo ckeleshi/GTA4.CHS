@@ -1,4 +1,4 @@
 #pragma once
 #include "grcTexturePC.h"
 
-grcTexturePC read_png_as_texture(const std::filesystem::path &filename);
+std::tuple<uint, uint, std::vector<uchar>> read_dxt5(const std::filesystem::path &filename);

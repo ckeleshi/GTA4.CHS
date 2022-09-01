@@ -14,6 +14,15 @@ namespace gta_game
                                         plugin.game.game_addr.pTexturePCVirtualTable = *addresses[0].p<void *>(3);
                                     });
 
+        // https://github.com/ThirteenAG/GTAIV.EFLC.FusionFix/blob/master/source/dllmain.cpp
+        // Native: GET_CURRENT_EPISODE(7D7619D2)里面
+        // 11D6FD4
+        batch_matcher.register_step("83 3D ? ? ? ? ? 8B 01 0F 44 C2 89 01 B0 01 C2 08 00", 2,
+                                    [](const byte_pattern::result_type &addresses)
+                                    {
+                                        plugin.game.game_addr.pGameEpisodeID = *addresses[0].p<int *>(2);
+                                    });
+
         // RenderSingleBuffer使用了
         batch_matcher.register_step("A1 ? ? ? ? 80 7C 24 08 00", 1, [](const byte_pattern::result_type &addresses)
                                     { plugin.game.game_addr.fnGraphics_SetRenderState = addresses[0].p(); });

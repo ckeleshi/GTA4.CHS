@@ -12,7 +12,7 @@ static const float fTextureRowsCount = fTextureResolution / fSpriteHeight;
 static const float fTextureColumnsCount = fTextureResolution / fSpriteWidth;
 static const float fRatio = 4.0f;
 
-static grcTexturePC LCFont, TBoGTFont, TLADFont;
+static grcTexturePC IVFont, TBoGTFont, TLADFont;
 
 const GTAChar *CFont::SkipWord_Prolog(std::uintptr_t address)
 {
@@ -67,12 +67,12 @@ void CFont::AddSpecialPunctuationMarksWidth(const GTAChar *&str, float *width)
 
 void CFont::LoadTexture()
 {
-    Texture::read_png_as_texture(plugin.GetPluginAsset("lc.png"), LCFont);
-    Texture::read_png_as_texture(plugin.GetPluginAsset("tbogt.png"), TBoGTFont);
-    Texture::read_png_as_texture(plugin.GetPluginAsset("tlad.png"), TLADFont);
+    Texture::read_png_as_texture(plugin.GetPluginAsset("IV.png"), IVFont);
+    Texture::read_png_as_texture(plugin.GetPluginAsset("TBoGT.png"), TBoGTFont);
+    Texture::read_png_as_texture(plugin.GetPluginAsset("TLAD.png"), TLADFont);
 
     //在搜索pattern之后执行，所以这里直接赋值vtbl
-    LCFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
+    IVFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
     TBoGTFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
     TLADFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
 }
@@ -436,7 +436,24 @@ void CFont::PrintCHSChar(float x, float y, GTAChar chr)
     case 1:
     case 3:
     {
-        plugin.game.Graphics_SetRenderState(&LCFont);
+        switch (*plugin.game.game_addr.pGameEpisodeID)
+        {
+        case 0: // Default/IV
+            plugin.game.Graphics_SetRenderState(&IVFont);
+            break;
+
+        case 1: // TLAD
+            plugin.game.Graphics_SetRenderState(&TLADFont);
+            break;
+
+        case 2: // TBoGT
+            plugin.game.Graphics_SetRenderState(&TBoGTFont);
+            break;
+
+        default:
+            plugin.game.Graphics_SetRenderState(&IVFont);
+            return;
+        }
     }
     break;
 

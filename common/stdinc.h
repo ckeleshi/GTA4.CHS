@@ -26,7 +26,6 @@
 #include <vector>
 
 #include "BinaryFile.hpp"
-#include "MemoryFile.hpp"
 #include "injector/assembly.hpp"
 #include "injector/calling.hpp"
 #include "injector/hooking.hpp"

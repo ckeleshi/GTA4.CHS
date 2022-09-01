@@ -11,6 +11,7 @@ public:
   {
     void *pTexturePCVirtualTable;
     void *fnGraphics_SetRenderState;
+    int *pGameEpisodeID;
 
     CFontInfo *pFont_Datas;
     CFontDetails *pFont_Details;

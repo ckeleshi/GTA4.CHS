@@ -82,6 +82,12 @@ namespace Texture
 
         if (width && height && data)
         {
+            if (texture.m_pPixelData)
+                delete[] texture.m_pPixelData;
+
+            texture.m_wWidth = width;
+            texture.m_wHeight = height;
+            texture.m_wStride = width; // DXT5是这样
             texture.m_pPixelData = new uchar[squish::GetStorageRequirements(width, height, squish::kDxt5)];
             squish::CompressImage(data, width, height, texture.m_pPixelData, squish::kDxt5);
         }

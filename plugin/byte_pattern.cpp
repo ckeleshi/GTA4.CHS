@@ -58,13 +58,6 @@ byte_pattern &byte_pattern::set_pattern(const void *pattern_binary, size_t size)
     return *this;
 }
 
-byte_pattern &byte_pattern::set_results(const result_type &results)
-{
-    _results = results;
-
-    return *this;
-}
-
 byte_pattern &byte_pattern::reset_module()
 {
     static HMODULE default_module = GetModuleHandleA(nullptr);
@@ -142,7 +135,8 @@ std::vector<std::string> byte_pattern::split_pattern(const char *literal)
 
 pair<uint8_t, uint8_t> byte_pattern::parse_sub_pattern(const std::string &sub)
 {
-    auto digit_to_value = [](char character) {
+    auto digit_to_value = [](char character)
+    {
         if ('0' <= character && character <= '9')
             return (character - '0');
         else if ('A' <= character && character <= 'F')
@@ -222,7 +216,8 @@ void byte_pattern::transform_pattern(const char *literal)
 
 void byte_pattern::get_module_range(memory_pointer module)
 {
-    static auto getSection = [](const PIMAGE_NT_HEADERS nt_headers, unsigned section) -> PIMAGE_SECTION_HEADER {
+    static auto getSection = [](const PIMAGE_NT_HEADERS nt_headers, unsigned section) -> PIMAGE_SECTION_HEADER
+    {
         return reinterpret_cast<PIMAGE_SECTION_HEADER>(
             reinterpret_cast<UCHAR *>(nt_headers->OptionalHeader.DataDirectory) +
             nt_headers->OptionalHeader.NumberOfRvaAndSizes * sizeof(IMAGE_DATA_DIRECTORY) +
@@ -252,35 +247,6 @@ void byte_pattern::clear()
     this->_bpattern.clear();
     this->_mask.clear();
     this->_results.clear();
-}
-
-bool byte_pattern::validate_result() const
-{
-    const uint8_t *pbytes = this->_bpattern.data();
-    const uint8_t *pmask = this->_mask.data();
-
-    for (auto &result : _results)
-    {
-        __try
-        {
-            auto ptr = result.p<const uint8_t>();
-
-            for (size_t i = 0; i < _bpattern.size(); i++)
-            {
-                if ((pbytes[i] & pmask[i]) != (ptr[i] & pmask[i]))
-                {
-                    return false;
-                }
-            }
-        }
-        __except ((GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION) ? EXCEPTION_EXECUTE_HANDLER
-                                                                     : EXCEPTION_CONTINUE_SEARCH)
-        {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 size_t byte_pattern::count() const

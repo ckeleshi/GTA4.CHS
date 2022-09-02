@@ -15,7 +15,7 @@
 
 CPlugin plugin;
 
-void CPlugin::RegisterPatchSteps(batch_matching& batch_matcher)
+void CPlugin::RegisterPatchSteps(batch_matching &batch_matcher)
 {
     gta_benchmark::register_patches(batch_matcher);
     gta_font::register_patches(batch_matcher);
@@ -43,12 +43,7 @@ std::filesystem::path CPlugin::GetGameRoot() const
     return game_module_path.GetModuleDir();
 }
 
-std::filesystem::path CPlugin::GetRedirectRoot() const
-{
-    return plugin_module_path.GetModuleDir() / "GTA4.CHS/redirect";
-}
-
-std::filesystem::path CPlugin::GetPluginAsset(const char* rest_path) const
+std::filesystem::path CPlugin::GetPluginAsset(const std::filesystem::path &rest_path) const
 {
     return plugin_module_path.GetModuleDir() / "GTA4.CHS" / rest_path;
 }
@@ -57,23 +52,14 @@ bool CPlugin::Init(HMODULE module)
 {
     game_module_path.SetModule(::GetModuleHandleW(nullptr));
     plugin_module_path.SetModule(module);
-    aslr_handler.SetGameBase(game_module_path.GetModule());
 
     batch_matching batch_matcher;
 
-    batch_matcher.set_aslr(aslr_handler);
-
-    //必须先注册再读缓存
     RegisterPatchSteps(batch_matcher);
 
-    batch_matcher.load_cache(GetPluginAsset("pattern_cache.dat"));
-
-    //验证缓存的操作放在byte_pattern中
     if (batch_matcher.perform_search())
     {
-        //如果有进行过搜索则写入，不论成功还是失败
-        batch_matcher.write_cache(GetPluginAsset("pattern_cache.dat"));
-        batch_matcher.write_log(GetPluginAsset("pattern_log.log"), false);
+        batch_matcher.write_log(GetPluginAsset("pattern_log.log"));
     }
 
     if (!batch_matcher.is_all_succeed())
@@ -85,6 +71,7 @@ bool CPlugin::Init(HMODULE module)
 
     char_table.LoadTable(GetPluginAsset("char_table.dat"));
     whm_table.LoadTable(GetPluginAsset("whm_table.dat"));
+    CFont::LoadTexture();
 
     return true;
 }

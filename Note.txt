@@ -1,9 +1,6 @@
 ﻿-----------todo-----------
-改成免覆盖dxt5字库(libpng+libsquish+grcTexturePC)，避免R星校验机制影响
-png2dxt5工具，减小文件体积
-
+测试游戏路径含中文时path::string转c_str是否正确
 研究第二次启动游戏时汉化失效的问题
-修正文字过扁问题(PrintCHSChar排版)
 *craplist.net邮件排版问题(最低优先)
 
 -----------issue list-----------

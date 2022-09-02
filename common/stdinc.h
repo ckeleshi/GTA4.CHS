@@ -26,7 +26,6 @@
 #include <vector>
 
 #include "BinaryFile.hpp"
-#include "MemoryFile.hpp"
 #include "injector/assembly.hpp"
 #include "injector/calling.hpp"
 #include "injector/hooking.hpp"
@@ -39,6 +38,7 @@
 #include <squish.h>
 #include <utf8cpp/utf8.h>
 #include <zlib.h>
+#include <png.h>
 
 typedef unsigned char uint8;
 typedef unsigned char uchar;

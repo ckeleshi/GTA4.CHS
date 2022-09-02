@@ -1,6 +1,7 @@
 ﻿#include "font.h"
 #include "gta_string.h"
 #include "plugin.h"
+#include "texture.h"
 
 static const float fChsWidth = 32.0f;
 static const float fChsWidthFix = -1.0f;
@@ -11,8 +12,7 @@ static const float fTextureRowsCount = fTextureResolution / fSpriteHeight;
 static const float fTextureColumnsCount = fTextureResolution / fSpriteWidth;
 static const float fRatio = 4.0f;
 
-static grcTexturePC *pChsTexture;
-static grcTexturePC *pChsLC, *pChsTBoGT, *pChsTLAD;
+static grcTexturePC IVFont, TBoGTFont, TLADFont;
 
 const GTAChar *CFont::SkipWord_Prolog(std::uintptr_t address)
 {
@@ -65,14 +65,16 @@ void CFont::AddSpecialPunctuationMarksWidth(const GTAChar *&str, float *width)
     }
 }
 
-void *__fastcall CFont::LoadTextureCB(void *pDictionary, int, uint hash)
+void CFont::LoadTexture()
 {
-    void *result = plugin.game.Dictionary_grcTexturePC_GetElementByKey(pDictionary, hash);
+    Texture::read_png_as_texture(plugin.GetPluginAsset("IV.png"), IVFont);
+    Texture::read_png_as_texture(plugin.GetPluginAsset("TBoGT.png"), TBoGTFont);
+    Texture::read_png_as_texture(plugin.GetPluginAsset("TLAD.png"), TLADFont);
 
-    pChsTexture = plugin.game.Dictionary_grcTexturePC_GetElementByKey(
-        pDictionary, plugin.game.Hash_HashStringFromSeediCase("font_chs"));
-
-    return result;
+    //在搜索pattern之后执行，所以这里直接赋值vtbl
+    IVFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
+    TBoGTFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
+    TLADFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
 }
 
 const GTAChar *CFont::SkipWord(const GTAChar *str)
@@ -223,7 +225,8 @@ float CFont::GetStringWidthRemake(const GTAChar *str, bool get_all)
                 {
                     switch (token_data.a110[token_index])
                     {
-                    case 1: {
+                    case 1:
+                    {
                         // 91BF26
                         current_width += plugin.game.game_addr.pFont_ButtonWidths[token_data.f0[token_index] - 255] *
                                          using_details.fBlipScaleX;
@@ -232,14 +235,16 @@ float CFont::GetStringWidthRemake(const GTAChar *str, bool get_all)
                         break;
                     }
 
-                    case 2: {
+                    case 2:
+                    {
                         // 91BF53
                         plugin.game.Font_AddTokenStringWidth(token_data.f10[token_index], &current_width, render_index);
                         had_word = true;
                         break;
                     }
 
-                    default: {
+                    default:
+                    {
                         break;
                     }
                     }
@@ -401,7 +406,8 @@ void CFont::PrintCHSChar(float x, float y, GTAChar chr)
     old_screen_rect.top_right.x = x + old_screen_character_width;
     old_screen_rect.top_right.y = y;
 
-    auto flt_proj = [](float old_lb, float old_ub, float old_val, float new_lb, float new_ub) {
+    auto flt_proj = [](float old_lb, float old_ub, float old_val, float new_lb, float new_ub)
+    {
         auto old_range = old_ub - old_lb;
         auto old_diff = old_val - old_lb;
         auto new_range = new_ub - new_lb;
@@ -412,16 +418,17 @@ void CFont::PrintCHSChar(float x, float y, GTAChar chr)
     //将virtual_char_rect投影到old_screen_rect中，得到real_screen_rect
     CRect real_screen_rect;
 
+    //计算y的第二个参数越小，字的y长度越大
     real_screen_rect.top_right.x = flt_proj(0.0f, 64.0f, relative_char_rect.top_right.x, old_screen_rect.bottom_left.x,
                                             old_screen_rect.top_right.x);
 
-    real_screen_rect.top_right.y = flt_proj(0.0f, 78.4912f, relative_char_rect.top_right.y, old_screen_rect.top_right.y,
+    real_screen_rect.top_right.y = flt_proj(0.0f, 74.4912f, relative_char_rect.top_right.y, old_screen_rect.top_right.y,
                                             old_screen_rect.bottom_left.y);
 
     real_screen_rect.bottom_left.x = flt_proj(0.0f, 64.0f, relative_char_rect.bottom_left.x,
                                               old_screen_rect.bottom_left.x, old_screen_rect.top_right.x);
 
-    real_screen_rect.bottom_left.y = flt_proj(0.0f, 78.4912f, relative_char_rect.bottom_left.y,
+    real_screen_rect.bottom_left.y = flt_proj(0.0f, 74.4912f, relative_char_rect.bottom_left.y,
                                               old_screen_rect.top_right.y, old_screen_rect.bottom_left.y);
 
     switch (render_state->nFont)
@@ -429,8 +436,27 @@ void CFont::PrintCHSChar(float x, float y, GTAChar chr)
     case 0:
     case 1:
     case 3:
-        plugin.game.Graphics_SetRenderState(pChsTexture);
-        break;
+    {
+        switch (*plugin.game.game_addr.pGameEpisodeID)
+        {
+        case 0: // Default/IV
+            plugin.game.Graphics_SetRenderState(&IVFont);
+            break;
+
+        case 1: // TLAD
+            plugin.game.Graphics_SetRenderState(&TLADFont);
+            break;
+
+        case 2: // TBoGT
+            plugin.game.Graphics_SetRenderState(&TBoGTFont);
+            break;
+
+        default:
+            plugin.game.Graphics_SetRenderState(&IVFont);
+            return;
+        }
+    }
+    break;
 
     default:
         break;

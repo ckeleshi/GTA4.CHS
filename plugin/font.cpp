@@ -418,16 +418,17 @@ void CFont::PrintCHSChar(float x, float y, GTAChar chr)
     //将virtual_char_rect投影到old_screen_rect中，得到real_screen_rect
     CRect real_screen_rect;
 
+    //计算y的第二个参数越小，字的y长度越大
     real_screen_rect.top_right.x = flt_proj(0.0f, 64.0f, relative_char_rect.top_right.x, old_screen_rect.bottom_left.x,
                                             old_screen_rect.top_right.x);
 
-    real_screen_rect.top_right.y = flt_proj(0.0f, 78.4912f, relative_char_rect.top_right.y, old_screen_rect.top_right.y,
+    real_screen_rect.top_right.y = flt_proj(0.0f, 74.4912f, relative_char_rect.top_right.y, old_screen_rect.top_right.y,
                                             old_screen_rect.bottom_left.y);
 
     real_screen_rect.bottom_left.x = flt_proj(0.0f, 64.0f, relative_char_rect.bottom_left.x,
                                               old_screen_rect.bottom_left.x, old_screen_rect.top_right.x);
 
-    real_screen_rect.bottom_left.y = flt_proj(0.0f, 78.4912f, relative_char_rect.bottom_left.y,
+    real_screen_rect.bottom_left.y = flt_proj(0.0f, 74.4912f, relative_char_rect.bottom_left.y,
                                               old_screen_rect.top_right.y, old_screen_rect.bottom_left.y);
 
     switch (render_state->nFont)

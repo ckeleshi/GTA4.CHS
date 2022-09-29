@@ -1,0 +1,32 @@
+﻿{
+    "gxt": {
+        "MAIN": [
+            {
+                "hash": 1,
+                "original": "text",
+                "translated": "文本",
+                "desc": ""
+            },
+            {
+                "hash": 2,
+                "original": "text",
+                "translated": "文本",
+                "desc": ""
+            }
+        ]
+    },
+    "whm": [
+        {
+            "hash": 1,
+            "original": "text",
+            "translated": "文本",
+            "desc": ""
+        },
+        {
+            "hash": 2,
+            "original": "text",
+            "translated": "文本",
+            "desc": ""
+        }
+    ]
+}

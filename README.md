@@ -9,3 +9,4 @@
 [fmt(Vcpkg)](https://github.com/fmtlib/fmt)<br/>
 [libpng(Vcpkg)](https://github.com/glennrp/libpng)<br/>
 [libsquish(Vcpkg)](https://sourceforge.net/projects/libsquish/)<br/>
+[rapidjson(Vcpkg)](https://github.com/Tencent/rapidjson)<br/>

@@ -3,11 +3,8 @@
 
 int main(int argc, char **argv)
 {
-    // GXTTool -b2t american.gxt D:/text
-    // GXTTool -t2b D:/text D:/binary
-    // GXTTool -collect D:/text D:/collection
-
     IVText instance;
+    bool error = false;
 
     if (argc == 4)
     {
@@ -15,18 +12,49 @@ int main(int argc, char **argv)
         {
             instance.ProcessB2T(argv[2], argv[3]);
         }
+        else if (std::strcmp(argv[1], "-b2j") == 0)
+        {
+            instance.ProcessB2J(argv[2], argv[3]);
+        }
         else if (std::strcmp(argv[1], "-t2b") == 0)
         {
             instance.ProcessT2B(argv[2], argv[3]);
+        }
+        else if (std::strcmp(argv[1], "-j2b") == 0)
+        {
+            instance.ProcessJ2B(argv[2], argv[3]);
+        }
+        else if (std::strcmp(argv[1], "-t2j") == 0)
+        {
+            instance.ProcessT2J(argv[2], argv[3]);
         }
         else if (std::strcmp(argv[1], "-collect") == 0)
         {
             instance.ProcessCollect(argv[2], argv[3]);
         }
+        else
+        {
+            error = true;
+        }
     }
     else
     {
-        fmt::printf("打开方式不对。\n");
+#ifdef _DEBUG
+            instance.ProcessT2B("D:\\text\\GTAIV\\text", "D:\\text\\GTAIV\\text");
+#else
+        error = true;
+#endif
+    }
+
+    if (error)
+    {
+        fmt::printf("使用方法:\n"
+                    "gxt转txt: gxt_tool.exe -b2t [gxt文件] [txt文件夹]\n"
+                    "gxt转json: gxt_tool.exe -b2j [gxt文件] [json文件夹]\n"
+                    "txt转gxt: gxt_tool.exe -t2b [txt文件夹] [gxt文件夹]\n"
+                    "json转gxt: gxt_tool.exe -j2b [json文件夹] [gxt文件夹]\n"
+                    "txt转json: gxt_tool.exe -t2j [txt文件夹] [json文件夹]\n"
+                    "生成字库: gxt_tool.exe -collect [(任意文本格式)文件夹] [输出文件夹]\n");
     }
 
     return 0;

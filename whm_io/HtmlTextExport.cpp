@@ -2,6 +2,10 @@
 #include "../common/fnv_hash.h"
 #include "HTMLDocument.h"
 #include "rsc_header.h"
+#include <rapidjson/document.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/reader.h>
+#include <rapidjson/stringbuffer.h>
 
 void CHtmlTextExport::ExportHtml(const path_type &input_folder)
 {
@@ -100,6 +104,49 @@ void CHtmlTextExport::ExportText(const std::filesystem::path &filename,
     }
 
     std::fclose(out);
+}
+
+void CHtmlTextExport::ExportJson(const std::filesystem::path &filename,
+                                 const std::vector<exported_text_entry> &container)
+{
+    if (container.empty())
+    {
+        return;
+    }
+
+    auto out = std::fopen(filename.string().c_str(), "w");
+
+    if (!out)
+    {
+        return;
+    }
+
+    rapidjson::StringBuffer buffer(nullptr, 1024 * 1024 * 10); // 10MB
+    rapidjson::PrettyWriter writer(buffer);
+
+    buffer.Clear();
+
+    writer.StartArray();
+
+    for (auto &entry : container)
+    {
+        auto u8_str = Windows1252ToUtf8(entry.str);
+        writer.StartObject();
+        writer.Key("hash");
+        writer.Uint(entry.hash);
+        writer.Key("original");
+        writer.String(u8_str.c_str());
+        writer.Key("translated");
+        writer.String(u8_str.c_str());
+        writer.Key("desc");
+        writer.String("");
+        writer.EndObject();
+    }
+
+    writer.EndArray();
+
+    fwrite(buffer.GetString(), buffer.GetSize(), 1, out);
+    fclose(out);
 }
 
 bool CHtmlTextExport::IsBlankText(const std::string &str)

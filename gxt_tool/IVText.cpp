@@ -1,6 +1,11 @@
 ﻿#include "IVText.h"
 #include "../common/fnv_hash.h"
 #include "../common/module_path.h"
+#include <rapidjson/document.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/reader.h>
+#include <rapidjson/stream.h>
+#include <rapidjson/stringbuffer.h>
 
 void IVText::ProcessT2B(const PathType &inFolder, const PathType &outFolder)
 {
@@ -9,11 +14,32 @@ void IVText::ProcessT2B(const PathType &inFolder, const PathType &outFolder)
     GenerateBinary(outFolder / "chinese.gxt");
 }
 
+void IVText::ProcessJ2B(const PathType &inFolder, const PathType &outFolder)
+{
+    create_directories(outFolder);
+    LoadJsons(inFolder);
+    GenerateBinary(outFolder / "chinese.gxt");
+}
+
+void IVText::ProcessT2J(const PathType &inFolder, const PathType &outFolder)
+{
+    create_directories(outFolder);
+    LoadTexts(inFolder);
+    GenerateJsons(outFolder);
+}
+
 void IVText::ProcessB2T(const PathType &inFile, const PathType &outFolder)
 {
     create_directories(outFolder);
     LoadBinary(inFile);
     GenerateTexts(outFolder);
+}
+
+void IVText::ProcessB2J(const PathType &inFile, const PathType &outFolder)
+{
+    create_directories(outFolder);
+    LoadBinary(inFile);
+    GenerateJsons(outFolder);
 }
 
 void IVText::ProcessCollect(const PathType &inFolder, const PathType &outFolder)
@@ -90,6 +116,56 @@ void IVText::ProcessTexts(const PathType &inFolder, bool recursive, const FuncTy
     }
 }
 
+void IVText::ProcessJsons(const PathType &inFolder, bool recursive, const FuncType &func)
+{
+    std::vector<PathType> filenames;
+
+    if (recursive)
+    {
+        std::filesystem::recursive_directory_iterator dir_it{inFolder};
+
+        while (dir_it != std::filesystem::recursive_directory_iterator{})
+        {
+            PathType path = dir_it->path();
+
+            if (path.extension() == ".json")
+            {
+                filenames.push_back(path);
+            }
+
+            ++dir_it;
+        }
+    }
+    else
+    {
+        std::filesystem::directory_iterator dir_it{inFolder};
+
+        while (dir_it != std::filesystem::directory_iterator{})
+        {
+            PathType path = dir_it->path();
+
+            if (path.extension() == ".json")
+            {
+                filenames.push_back(path);
+            }
+
+            ++dir_it;
+        }
+    }
+
+    for (auto &filename : filenames)
+    {
+        std::ifstream ifs(filename);
+
+        if (!ifs)
+        {
+            continue;
+        }
+
+        func(filename.string(), ifs);
+    }
+}
+
 void IVText::LoadTextFunc(const std::string &filename, std::ifstream &stream)
 {
     std::regex table_regex(R"(\[([0-9a-zA-Z_]{1,7})\])");
@@ -140,16 +216,16 @@ void IVText::LoadTextFunc(const std::string &filename, std::ifstream &stream)
             if (table_iter != m_Data.end())
             {
                 auto &table_cont = table_iter->second;
-                auto hash_string = matches.str(1);
+                auto hash = std::stoul(matches.str(1), nullptr, 16);
 
-                if (table_cont.empty() || table_cont.back().hash_string != hash_string)
+                if (table_cont.empty() || table_cont.back().hash != hash)
                 {
                     table_cont.emplace_back();
                 }
 
                 auto p_entry = &table_cont.back();
 
-                p_entry->hash_string = hash_string;
+                p_entry->hash = hash;
 
                 auto b_string = matches.str(2);
 
@@ -179,6 +255,43 @@ void IVText::LoadTextFunc(const std::string &filename, std::ifstream &stream)
     }
 }
 
+void IVText::LoadJsonFunc(const std::string &filename, std::ifstream &stream)
+{
+    rapidjson::Document doc;
+
+    std::string json(std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{});
+
+    auto table_iter = m_Data.end();
+
+    if (doc.Parse(json.c_str()).HasParseError())
+    {
+        fmt::printf("%s: json解析失败。\n", filename);
+        return;
+    }
+
+    if (!doc.IsObject())
+    {
+        fmt::printf("%s: json类型错误。\n", filename);
+        return;
+    }
+
+    for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it)
+    {
+        std::string table_name = it->name.GetString();
+        table_iter = m_Data.emplace(table_name, std::vector<TextEntry>()).first;
+
+        auto text_entries_array = doc[table_name.c_str()].GetArray();
+
+        for (auto &entry : text_entries_array)
+        {
+            auto obj = entry.GetObj();
+
+            table_iter->second.emplace_back(
+                TextEntry{obj["hash"].GetUint(), obj["original"].GetString(), obj["translated"].GetString()});
+        }
+    }
+}
+
 void IVText::CollectCharsFunc(std::ifstream &stream, std::set<char32_t> &chars)
 {
     std::vector<char> u8_buffer;
@@ -200,6 +313,12 @@ void IVText::LoadTexts(const PathType &inFolder)
 {
     ProcessTexts(inFolder, false,
                  [this](const std::string &filename, std::ifstream &stream) { LoadTextFunc(filename, stream); });
+}
+
+void IVText::LoadJsons(const PathType &inFolder)
+{
+    ProcessJsons(inFolder, false,
+                 [this](const std::string &filename, std::ifstream &stream) { LoadJsonFunc(filename, stream); });
 }
 
 void IVText::GenerateBinary(const PathType &output_binary) const
@@ -269,17 +388,17 @@ void IVText::GenerateBinary(const PathType &output_binary) const
 
         for (auto &entry : table.second)
         {
-            if (entry.hash_string.empty() || entry.original.empty() || entry.translated.empty())
+            if (entry.original.empty() || entry.translated.empty())
             {
-                fmt::printf("遇到缺失的文本项:\nhash_string: %s\n\n", entry.hash_string);
+                fmt::printf("遇到缺失的文本项:\nhash: %u/0x%08X\n\n", entry.hash, entry.hash);
             }
 
             if (!CompareTokens(entry.original, entry.translated))
             {
-                fmt::printf("遇到Token与原文不一致的译文:\nhash_string: %s\n\n", entry.hash_string);
+                fmt::printf("遇到Token与原文不一致的译文:\nhash: %u/0x%08X\n\n", entry.hash, entry.hash);
             }
 
-            keyEntry.Hash = std::stoul(entry.hash_string, nullptr, 16);
+            keyEntry.Hash = entry.hash;
             keyEntry.Offset = static_cast<std::int32_t>(datas.size() * 2);
 
             auto w_string_to_write = U8ToWide(entry.translated);
@@ -563,7 +682,8 @@ void IVText::LoadBinary(const PathType &inFile)
             wStringType w_string;
             TextEntry entry;
 
-            entry.hash_string = fmt::sprintf("0x%08X", key.Hash);
+            entry.hash = key.Hash;
+
             auto offset = key.Offset / 2;
 
             while (datas[offset] != 0)
@@ -602,10 +722,52 @@ void IVText::GenerateTexts(const PathType &output_texts) const
 
         for (auto &entry : table.second)
         {
-            line = fmt::sprintf("%s=%s\n", entry.hash_string, entry.translated);
+            line = fmt::sprintf("0x%08X=%s\n", entry.hash, entry.translated);
             stream << ';' << line << line << '\n';
         }
 
+        stream.close();
+    }
+}
+
+void IVText::GenerateJsons(const PathType &output_texts) const
+{
+    std::ofstream stream;
+    rapidjson::StringBuffer buffer(nullptr, 1024 * 1024 * 10); // 10MB
+    rapidjson::PrettyWriter writer(buffer);
+
+    for (auto &table : m_Data)
+    {
+        stream.open(output_texts / (table.first + ".json"), std::ios::trunc);
+
+        if (!stream)
+        {
+            fmt::printf("创建输出文件失败\n");
+        }
+
+        buffer.Clear();
+        writer.StartObject();
+        writer.Key(table.first.c_str());
+        writer.StartArray();
+
+        for (auto &entry : table.second)
+        {
+            writer.StartObject();
+            writer.Key("hash");
+            writer.Uint(entry.hash);
+            writer.Key("original");
+            writer.String(entry.original.c_str());
+            writer.Key("translated");
+            writer.String(entry.translated.c_str());
+            writer.Key("desc");
+            writer.String("");
+            writer.EndObject();
+        }
+
+        writer.EndArray();
+        writer.EndObject();
+
+        stream.write(buffer.GetString(), buffer.GetSize());
         stream.close();
     }
 }

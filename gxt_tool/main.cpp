@@ -24,10 +24,6 @@ int main(int argc, char **argv)
         {
             instance.ProcessJ2B(argv[2], argv[3]);
         }
-        else if (std::strcmp(argv[1], "-t2j") == 0)
-        {
-            instance.ProcessT2J(argv[2], argv[3]);
-        }
         else if (std::strcmp(argv[1], "-collect") == 0)
         {
             instance.ProcessCollect(argv[2], argv[3]);
@@ -37,13 +33,20 @@ int main(int argc, char **argv)
             error = true;
         }
     }
+    else if (argc == 3)
+    {
+        if (std::strcmp(argv[1], "-t2j") == 0)
+        {
+            instance.ProcessT2J(argv[2]);
+        }
+        else
+        {
+            error = true;
+        }
+    }
     else
     {
-#ifdef _DEBUG
-            instance.ProcessT2B("D:\\text\\GTAIV\\text", "D:\\text\\GTAIV\\text");
-#else
         error = true;
-#endif
     }
 
     if (error)
@@ -53,7 +56,7 @@ int main(int argc, char **argv)
                     "gxt转json: gxt_tool.exe -b2j [gxt文件] [json文件夹]\n"
                     "txt转gxt: gxt_tool.exe -t2b [txt文件夹] [gxt文件夹]\n"
                     "json转gxt: gxt_tool.exe -j2b [json文件夹] [gxt文件夹]\n"
-                    "txt转json: gxt_tool.exe -t2j [txt文件夹] [json文件夹]\n"
+                    "txt转json: gxt_tool.exe -t2j [txt文件夹]\n"
                     "生成字库: gxt_tool.exe -collect [(任意文本格式)文件夹] [输出文件夹]\n");
     }
 

@@ -21,11 +21,10 @@ void IVText::ProcessJ2B(const PathType &inFolder, const PathType &outFolder)
     GenerateBinary(outFolder / "chinese.gxt");
 }
 
-void IVText::ProcessT2J(const PathType &inFolder, const PathType &outFolder)
+void IVText::ProcessT2J(const PathType &inFolder)
 {
-    create_directories(outFolder);
     LoadTexts(inFolder);
-    GenerateJsons(outFolder);
+    GenerateJsons(inFolder);
 }
 
 void IVText::ProcessB2T(const PathType &inFile, const PathType &outFolder)

@@ -37,4 +37,4 @@ target_precompile_headers(whm_io PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/common/std
 
 target_link_libraries(GTA4.CHS PRIVATE utf8cpp range-v3 range-v3-meta range-v3::meta range-v3-concepts ZLIB::ZLIB PNG::PNG fmt::fmt-header-only unofficial::libsquish::squish)
 target_link_libraries(gxt_tool PRIVATE utf8cpp range-v3 range-v3-meta range-v3::meta range-v3-concepts ZLIB::ZLIB PNG::PNG fmt::fmt-header-only unofficial::libsquish::squish rapidjson)
-target_link_libraries(whm_io PRIVATE utf8cpp range-v3 range-v3-meta range-v3::meta range-v3-concepts ZLIB::ZLIB PNG::PNG fmt::fmt-header-only unofficial::libsquish::squish)
+target_link_libraries(whm_io PRIVATE utf8cpp range-v3 range-v3-meta range-v3::meta range-v3-concepts ZLIB::ZLIB PNG::PNG fmt::fmt-header-only unofficial::libsquish::squish rapidjson)

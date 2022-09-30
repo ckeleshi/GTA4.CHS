@@ -11,15 +11,13 @@ class CHtmlTextExport
     struct exported_text_entry
     {
         uint hash;
-        std::string str;
+        std::string ori, str;
     };
 
     void ExportHtml(const path_type &input_folder); //加载文件夹中所有whm文件，在原地生成json文本
     void GenerateDataBase(const path_type &input_folder, const path_type &output_file);
 
     void ConvertJson(const path_type &input_folder);    //加载文件夹中所有txt文本，在原地生成json文本
-    void ExportHtmlJson(const path_type &input_folder); //加载文件夹中所有whm文件，在原地生成json文本
-    void GenerateDataBaseJson(const path_type &input_folder, const path_type &output_file);
 
   private:
     std::vector<std::vector<std::string>> m_Texts;
@@ -33,8 +31,6 @@ class CHtmlTextExport
     static std::vector<exported_text_entry> ExtractWhmStrings(const std::filesystem::path &filename,
                                                               std::set<std::size_t> &hashes); //收集whm中所有字符串
     static std::string Windows1252ToUtf8(const std::string &str);                             //转码
-    static void ExportText(const std::filesystem::path &filename,
-                           const std::vector<exported_text_entry> &container); //将whm文本输出到txt
     static void ExportJson(const std::filesystem::path &filename,
                            const std::vector<exported_text_entry> &container); //将whm文本输出到txt
 

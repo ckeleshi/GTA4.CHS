@@ -87,7 +87,7 @@ class IVText
     void ProcessB2T(const PathType &inFile, const PathType &outFolder);
     void ProcessCollect(const PathType &inFolder, const PathType &outFolder);
 
-    void ProcessT2J(const PathType &inFolder, const PathType &outFolder);
+    void ProcessT2J(const PathType &inFolder);
     void ProcessJ2B(const PathType &inFolder, const PathType &outFolder);
     void ProcessB2J(const PathType &inFile, const PathType &outFolder);
 

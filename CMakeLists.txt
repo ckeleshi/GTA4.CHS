@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(VCPKG_TARGET_TRIPLET "x86-windows-static")
 
+set(CMAKE_GENERATOR_PLATFORM "Win32")
+
 project(gta4_chs)
 
 add_definitions(-DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)

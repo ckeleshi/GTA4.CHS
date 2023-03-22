@@ -38,7 +38,6 @@
 #include <squish.h>
 #include <utf8cpp/utf8.h>
 #include <zlib.h>
-#include <png.h>
 
 typedef unsigned char uint8;
 typedef unsigned char uchar;

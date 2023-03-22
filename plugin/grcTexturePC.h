@@ -30,6 +30,8 @@ struct grcTexturePC
 
     grcTexturePC();
     ~grcTexturePC();
+
+    void ReleaseTexture();
 };
 
 VALIDATE_SIZE(grcTexturePC, 0x50);

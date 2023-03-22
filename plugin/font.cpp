@@ -65,7 +65,7 @@ void CFont::AddSpecialPunctuationMarksWidth(const GTAChar *&str, float *width)
     }
 }
 
-void CFont::LoadTexture()
+void CFont::LoadTextures()
 {
     Texture::read_png_as_texture(plugin.GetPluginAsset("IV.png"), IVFont);
     Texture::read_png_as_texture(plugin.GetPluginAsset("TBoGT.png"), TBoGTFont);
@@ -75,6 +75,13 @@ void CFont::LoadTexture()
     IVFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
     TBoGTFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
     TLADFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
+}
+
+void CFont::ReleaseTextures()
+{
+    IVFont.ReleaseTexture();
+    TBoGTFont.ReleaseTexture();
+    TLADFont.ReleaseTexture();
 }
 
 const GTAChar *CFont::SkipWord(const GTAChar *str)

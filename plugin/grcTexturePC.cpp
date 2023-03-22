@@ -35,3 +35,12 @@ grcTexturePC::~grcTexturePC()
         delete[] m_pPixelData;
     }
 }
+
+void grcTexturePC::ReleaseTexture()
+{
+    if (m_piTexture)
+    {
+        m_piTexture->Release();
+        m_piTexture = nullptr;
+    }
+}

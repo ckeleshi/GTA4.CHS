@@ -6,6 +6,16 @@ void CGame::Graphics_SetRenderState(void *texture, int arg4)
     injector::cstd<void(void *, int)>::call(game_addr.fnGraphics_SetRenderState, texture, arg4);
 }
 
+grcTexturePC* CGame::Dictionary_grcTexturePC_GetElementByKey(void* dictionary, uint hash)
+{
+    return injector::thiscall<grcTexturePC* (void*, uint)>::call(game_addr.fnDictionary_GetElementByKey, dictionary, hash);
+}
+
+uint CGame::Hash_HashStringFromSeediCase(const char* str, uint hash)
+{
+    return injector::cstd<uint(const char*, uint)>::call(game_addr.fnHash_HashStringFromSeediCase, str, hash);
+}
+
 uchar CGame::Font_GetRenderIndex()
 {
     return injector::cstd<uchar()>::call(game_addr.fnFont_GetRenderIndex);

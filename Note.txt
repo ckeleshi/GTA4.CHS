@@ -1,4 +1,5 @@
 ﻿-----------todo-----------
+自己创建的grcTexture在DeviceReset时的流程
 研究第二次启动游戏时汉化失效的问题
 *craplist.net邮件排版问题(最低优先)
 

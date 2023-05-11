@@ -35,6 +35,11 @@
 #include <fmt/printf.h>
 #include <png.h>
 #include <range/v3/all.hpp>
+#include <rapidjson/document.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/reader.h>
+#include <rapidjson/stream.h>
+#include <rapidjson/stringbuffer.h>
 #include <squish.h>
 #include <utf8cpp/utf8.h>
 #include <zlib.h>

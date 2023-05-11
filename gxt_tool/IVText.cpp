@@ -1,11 +1,6 @@
 ﻿#include "IVText.h"
 #include "../common/fnv_hash.h"
 #include "../common/module_path.h"
-#include <rapidjson/document.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/reader.h>
-#include <rapidjson/stream.h>
-#include <rapidjson/stringbuffer.h>
 
 void IVText::ProcessT2B(const PathType &inFolder, const PathType &outFolder)
 {

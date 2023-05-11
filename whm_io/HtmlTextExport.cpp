@@ -2,10 +2,6 @@
 #include "../common/fnv_hash.h"
 #include "HTMLDocument.h"
 #include "rsc_header.h"
-#include <rapidjson/document.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/reader.h>
-#include <rapidjson/stringbuffer.h>
 
 void CHtmlTextExport::ExportHtml(const path_type &input_folder)
 {

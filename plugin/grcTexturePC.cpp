@@ -53,7 +53,7 @@ void grcTexturePC::GenerateTexture()
 
     for (int row = 0; row < m_wHeight; ++row)
     {
-        std::memcpy(reinterpret_cast<uchar *>(lock_rect.pBits) + lock_rect.Pitch * row, m_pPixelData + row * m_wWidth,
+        std::memcpy(reinterpret_cast<uchar *>(lock_rect.pBits) + row * lock_rect.Pitch, m_pPixelData + row * m_wStride,
                     m_wWidth);
     }
 

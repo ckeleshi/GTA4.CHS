@@ -31,6 +31,7 @@ struct grcTexturePC
     grcTexturePC();
     ~grcTexturePC();
 
+    void GenerateTexture();
     void ReleaseTexture();
 };
 

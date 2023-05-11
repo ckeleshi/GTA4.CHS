@@ -1,4 +1,5 @@
 #include "grcTexturePC.h"
+#include "plugin.h"
 
 grcTexturePC::grcTexturePC()
 {
@@ -34,6 +35,29 @@ grcTexturePC::~grcTexturePC()
     {
         delete[] m_pPixelData;
     }
+}
+
+void grcTexturePC::GenerateTexture()
+{
+    if (m_piTexture || !m_pPixelData)
+    {
+        return;
+    }
+
+    (*plugin.game.game_addr.ppD3DDevice)
+        ->CreateTexture(m_wWidth, m_wHeight, 1, 0, D3DFMT_DXT5, D3DPOOL_MANAGED, &m_piTexture, nullptr);
+
+    RECT src_rect{0, 0, m_wWidth, m_wHeight};
+    D3DLOCKED_RECT lock_rect;
+    m_piTexture->LockRect(0, &lock_rect, &src_rect, 0);
+
+    for (int row = 0; row < m_wHeight; ++row)
+    {
+        std::memcpy(reinterpret_cast<uchar *>(lock_rect.pBits) + lock_rect.Pitch * row, m_pPixelData + row * m_wWidth,
+                    m_wWidth);
+    }
+
+    m_piTexture->UnlockRect(0);
 }
 
 void grcTexturePC::ReleaseTexture()

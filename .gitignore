@@ -2,3 +2,6 @@ build/
 .cache/
 .vscode/
 .xmake/
+CMakeSettings.json
+.vs/
+out/

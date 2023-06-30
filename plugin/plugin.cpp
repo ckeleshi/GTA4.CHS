@@ -59,7 +59,7 @@ bool CPlugin::Init(HMODULE module)
 
     if (batch_matcher.perform_search())
     {
-        batch_matcher.write_log(GetPluginAsset("pattern_log.log"));
+        batch_matcher.write_log("gta4.chs");
     }
 
     if (!batch_matcher.is_all_succeed())

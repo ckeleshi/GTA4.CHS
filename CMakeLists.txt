@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.24)
 
 cmake_policy(SET CMP0079 NEW)
 cmake_policy(SET CMP0091 NEW) # Enable CMAKE_MSVC_RUNTIME_LIBRARY
@@ -24,6 +24,7 @@ find_package(PNG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(unofficial-libsquish CONFIG REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 add_subdirectory(plugin)
 add_subdirectory(gxt_tool)
@@ -33,6 +34,6 @@ target_precompile_headers(GTA4.CHS PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/common/s
 target_precompile_headers(gxt_tool PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/common/stdinc.h")
 target_precompile_headers(whm_io PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/common/stdinc.h")
 
-target_link_libraries(GTA4.CHS PRIVATE utf8::cpp range-v3 range-v3-meta range-v3::meta range-v3-concepts ZLIB::ZLIB PNG::PNG fmt::fmt-header-only unofficial::libsquish::squish)
+target_link_libraries(GTA4.CHS PRIVATE utf8::cpp range-v3 range-v3-meta range-v3::meta range-v3-concepts ZLIB::ZLIB PNG::PNG fmt::fmt-header-only unofficial::libsquish::squish spdlog::spdlog_header_only)
 target_link_libraries(gxt_tool PRIVATE utf8::cpp range-v3 range-v3-meta range-v3::meta range-v3-concepts ZLIB::ZLIB PNG::PNG fmt::fmt-header-only unofficial::libsquish::squish rapidjson)
 target_link_libraries(whm_io PRIVATE utf8::cpp range-v3 range-v3-meta range-v3::meta range-v3-concepts ZLIB::ZLIB PNG::PNG fmt::fmt-header-only unofficial::libsquish::squish rapidjson)

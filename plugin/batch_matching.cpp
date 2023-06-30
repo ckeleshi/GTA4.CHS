@@ -57,36 +57,28 @@ void batch_matching::run_callbacks() const
     }
 }
 
-void batch_matching::write_log(const std::filesystem::path &filename) const
+void batch_matching::write_log(const char *logger_name) const
 {
 #ifdef _DEBUG
+    auto logger = spdlog::get(logger_name);
+
     auto hExe = GetModuleHandleW(NULL);
     auto hExeInt = reinterpret_cast<std::intptr_t>(hExe);
 
-    std::FILE *out = std::fopen(filename.string().c_str(), "wt");
-
-    if (!out)
-    {
-        return;
-    }
-
-    fmt::fprintf(out, "Time Cost: %.2lf ms\n\n", _last_cost_ms);
+    logger->info("Time Cost: {:.2f} ms\n\n", _last_cost_ms);
 
     for (auto &step : _steps)
     {
-        fmt::fprintf(out, "Pattern: %s\n", step.first.c_str());
-        fmt::fprintf(out, "Expected: %u\n", step.second.expected_size);
-        fmt::fprintf(out, "Found: %u\n", step.second.result.size());
+        logger->info("Pattern: {}\n", step.first.c_str());
+        logger->info("Expected: {}\n", step.second.expected_size);
+        logger->info("Found: {}\n", step.second.result.size());
 
         for (std::size_t index = 0; index < step.second.result.size(); ++index)
         {
-            fmt::fprintf(out, "Address%u: 0x%08X\n", index + 1, step.second.result[index].i() - hExeInt + 0x400000);
+            logger->info("Address{}: 0x{:08X}\n", index + 1, step.second.result[index].i() - hExeInt + 0x400000);
         }
 
-        fmt::fprintf(out, "\n");
+        logger->info("\n");
     }
-
-    std::fflush(out);
-    std::fclose(out);
 #endif
 }

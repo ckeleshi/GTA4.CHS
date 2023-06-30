@@ -2,83 +2,37 @@
 
 namespace Texture
 {
-    std::tuple<uint, uint, std::vector<uchar>> read_png(const std::filesystem::path &filename)
+    STextureData read_png(const std::filesystem::path &filename)
     {
-        std::tuple<uint, uint, std::vector<uchar>> result;
-        auto f = std::fopen(filename.string().c_str(), "rb");
-        png_structp png_ptr = nullptr;
-        png_infop info_ptr = nullptr;
+        STextureData result;
 
-        do
+        try
         {
-            if (f == nullptr)
-                break;
+            png::image<png::rgba_pixel> image(filename.string());
 
-            uchar sig[8];
+            result.width = image.get_width();
+            result.height = image.get_height();
+            auto row_bytes = result.width * 4;
+            result.pixels.resize(result.height * row_bytes);
 
-            fread(sig, 1, 8, f);
-            if (!png_check_sig(sig, 8))
-                break;
-
-            png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-            if (!png_ptr)
-                return result;
-
-            info_ptr = png_create_info_struct(png_ptr);
-            if (!info_ptr)
+            for (uint row = 0; row < result.height; ++row)
             {
-                png_destroy_read_struct(&png_ptr, nullptr, nullptr);
-                return result;
+                std::memcpy(result.pixels.data() + row * row_bytes, image.get_row(row).data(), row_bytes);
             }
+        }
+        catch (std::exception& e)
+        {
 
-            if (setjmp(png_jmpbuf(png_ptr)))
-                break;
-
-            png_init_io(png_ptr, f);
-            png_set_sig_bytes(png_ptr, 8);
-            png_read_info(png_ptr, info_ptr);
-
-            uint width, height;
-            int bit_depth, color_type;
-            png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth,
-                         &color_type, NULL, NULL, NULL);
-
-            if (bit_depth != 8 || color_type != PNG_COLOR_TYPE_RGB_ALPHA)
-                break;
-
-            std::vector<uchar *> row_ptrs;
-            std::vector<uchar> pixels;
-
-            row_ptrs.resize(height);
-            pixels.resize(width * height * 4);
-
-            for (uint row = 0; row < height; ++row)
-            {
-                row_ptrs[row] = pixels.data() + row * width * 4;
-            }
-
-            png_read_image(png_ptr, row_ptrs.data());
-            png_read_end(png_ptr, nullptr);
-
-            std::get<0>(result) = width;
-            std::get<1>(result) = height;
-            pixels.swap(std::get<2>(result));
-
-        } while (0);
-
-        png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-
-        if (f)
-            std::fclose(f);
+        }
 
         return result;
     }
 
-    void convert_texture(const std::tuple<uint, uint, std::vector<uchar>> &image, grcTexturePC &texture)
+    void convert_texture(const STextureData &rgba32_texture, grcTexturePC &texture)
     {
-        auto width = std::get<0>(image);
-        auto height = std::get<1>(image);
-        auto data = std::get<2>(image).data();
+        auto width = rgba32_texture.width;
+        auto height = rgba32_texture.height;
+        auto data = rgba32_texture.pixels.data();
 
         if (width && height && data)
         {

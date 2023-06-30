@@ -47,14 +47,14 @@ void grcTexturePC::GenerateTexture()
     (*plugin.game.game_addr.ppD3DDevice)
         ->CreateTexture(m_wWidth, m_wHeight, 1, 0, D3DFMT_DXT5, D3DPOOL_MANAGED, &m_piTexture, nullptr);
 
-    RECT src_rect{0, 0, m_wWidth, m_wHeight};
     D3DLOCKED_RECT lock_rect;
-    m_piTexture->LockRect(0, &lock_rect, &src_rect, 0);
+    m_piTexture->LockRect(0, &lock_rect, nullptr, 0);
 
+    // https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dlocked-rect#remarks
     for (int row = 0; row < m_wHeight; ++row)
     {
-        std::memcpy(reinterpret_cast<uchar *>(lock_rect.pBits) + row * lock_rect.Pitch, m_pPixelData + row * m_wStride,
-                    m_wWidth);
+        std::memcpy(reinterpret_cast<uchar *>(lock_rect.pBits) + row * lock_rect.Pitch / 4,
+                    m_pPixelData + row * m_wStride, m_wWidth);
     }
 
     m_piTexture->UnlockRect(0);

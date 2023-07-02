@@ -1,9 +1,9 @@
 ﻿#include "game.h"
 #include "plugin.h"
 
-void CGame::Graphics_SetRenderState(void *texture, int arg4)
+void CGame::Graphics_SetRenderState(grcTexturePC *texture, int arg4)
 {
-    injector::cstd<void(void *, int)>::call(game_addr.fnGraphics_SetRenderState, texture, arg4);
+    injector::cstd<void(grcTexturePC *, int)>::call(game_addr.fnGraphics_SetRenderState, texture, arg4);
 }
 
 grcTexturePC* CGame::Dictionary_grcTexturePC_GetElementByKey(void* dictionary, uint hash)

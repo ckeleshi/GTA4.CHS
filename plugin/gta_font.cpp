@@ -45,6 +45,11 @@ __declspec(naked) void ProcessToken_Epilog3()
     }
 }
 
+static char *strncpy_for_datfile_section(char *dst, char *src, uint count)
+{
+    return std::strncpy(dst, "content_chs.dat", count);
+}
+
 void register_patches(batch_matching &batch_matcher)
 {
     // 搜索"~%c~"找到CFont::ProcessString
@@ -105,7 +110,19 @@ void register_patches(batch_matching &batch_matcher)
                                 });
 
     // 搜索"font3"
-    // 加载fonts.wtd中的font_chs
+    // 修改本体字体文件名为fonts_chs
+    batch_matcher.register_step("80 7C 24 13 00 0F 85 6E 01 00 00", 2, [](const byte_pattern::result_type &addresses) {
+        injector::WriteMemory(addresses[0].i(12), "platform:/textures/fonts_chs", true);
+        injector::WriteMemory(addresses[1].i(12), "platform:/textures/fonts_chs", true);
+    });
+
+    // 修改资料片字体文件名
+    // 935093 修改setup2.xml解析<datfile>的结果为content_chs.dat，在content_chs.dat中指定FONTTXD
+    batch_matcher.register_step("6A 20 50 8D 44 24 6C 50 E8", 1, [](const byte_pattern::result_type &addresses) {
+        injector::MakeCALL(addresses[0].i(8), strncpy_for_datfile_section);
+    });
+
+    // 加载fonts_chs.wtd中的font_chs
     batch_matcher.register_step("8B CE 50 E8 ? ? ? ? 80 3D ? ? ? ? 6A", 2,
                                 [](const byte_pattern::result_type &addresses) {
                                     injector::MakeCALL(addresses[0].i(3), CFont::LoadTextureCB);

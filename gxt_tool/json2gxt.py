@@ -24,8 +24,10 @@ def write_gxt(tables,filename):
         tkey_block_offset = 12+len(tables)*12
         f.seek(tkey_block_offset)
         f.write(b'TKEY')
-        for table in tables.items():
-            
+        #排序表名，首先写入'MAIN'table
+        sorted_keys = ['MAIN']+[table_name for table_name in tables.keys() if table_name != 'MAIN']
+        for table_name in sorted_keys:
+            pass
 
 if __name__ == '__main__':
     start_time = time.perf_counter()

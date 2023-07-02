@@ -71,7 +71,6 @@ bool CPlugin::Init(HMODULE module)
 
     char_table.LoadTable(GetPluginAsset("char_table.dat"));
     whm_table.LoadTable(GetPluginAsset("whm_table.dat"));
-    CFont::LoadTextures();
 
     return true;
 }

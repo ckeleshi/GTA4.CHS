@@ -1,7 +1,6 @@
 ﻿#include "font.h"
 #include "gta_string.h"
 #include "plugin.h"
-#include "texture.h"
 
 static const float fChsWidth = 32.0f;
 static const float fChsWidthFix = -1.0f;
@@ -12,24 +11,16 @@ static const float fTextureRowsCount = fTextureResolution / fSpriteHeight;
 static const float fTextureColumnsCount = fTextureResolution / fSpriteWidth;
 static const float fRatio = 4.0f;
 
-static grcTexturePC IVFont, TBoGTFont, TLADFont;
+struct grcTexturePC *CNFont;
 
-void *__fastcall CFont::LoadTextureCB(void *pDictionary, int, uint hash)
+grcTexturePC *__fastcall CFont::LoadTextureCB(void *pDictionary, int, uint hash)
 {
-    void *result = plugin.game.Dictionary_grcTexturePC_GetElementByKey(pDictionary, hash);
+    auto result = plugin.game.Dictionary_grcTexturePC_GetElementByKey(pDictionary, hash);
 
-    IVFont.GenerateTexture();
-    TBoGTFont.GenerateTexture();
-    TLADFont.GenerateTexture();
+    CNFont = plugin.game.Dictionary_grcTexturePC_GetElementByKey(pDictionary,
+                                                                 plugin.game.Hash_HashStringFromSeediCase("font_chs"));
 
     return result;
-}
-
-void CFont::UnloadTextureCB()
-{
-    IVFont.ReleaseTexture();
-    TBoGTFont.ReleaseTexture();
-    TLADFont.ReleaseTexture();
 }
 
 const GTAChar *CFont::SkipWord_Prolog(std::uintptr_t address)
@@ -81,25 +72,6 @@ void CFont::AddSpecialPunctuationMarksWidth(const GTAChar *&str, float *width)
         *width += GetCharacterSizeNormalDispatch(*str - 0x20);
         ++str;
     }
-}
-
-void CFont::LoadTextures()
-{
-    Texture::read_png_as_texture(plugin.GetPluginAsset("IV.png"), IVFont);
-    Texture::read_png_as_texture(plugin.GetPluginAsset("TBoGT.png"), TBoGTFont);
-    Texture::read_png_as_texture(plugin.GetPluginAsset("TLAD.png"), TLADFont);
-
-    // 在搜索pattern之后执行，所以这里直接赋值vtbl
-    IVFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
-    TBoGTFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
-    TLADFont.vtbl = plugin.game.game_addr.pTexturePCVirtualTable;
-}
-
-void CFont::ReleaseTextures()
-{
-    IVFont.ReleaseTexture();
-    TBoGTFont.ReleaseTexture();
-    TLADFont.ReleaseTexture();
 }
 
 const GTAChar *CFont::SkipWord(const GTAChar *str)
@@ -457,26 +429,9 @@ void CFont::PrintCHSChar(float x, float y, GTAChar chr)
     case 0:
     case 1:
     case 3: {
-        switch (*plugin.game.game_addr.pGameEpisodeID)
-        {
-        case 0: // Default/IV
-            plugin.game.Graphics_SetRenderState(&IVFont);
-            break;
-
-        case 1: // TLAD
-            plugin.game.Graphics_SetRenderState(&TLADFont);
-            break;
-
-        case 2: // TBoGT
-            plugin.game.Graphics_SetRenderState(&TBoGTFont);
-            break;
-
-        default:
-            plugin.game.Graphics_SetRenderState(&IVFont);
-            return;
-        }
+        plugin.game.Graphics_SetRenderState(CNFont);
+        break;
     }
-    break;
 
     default:
         break;

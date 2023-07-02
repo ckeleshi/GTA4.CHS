@@ -120,11 +120,7 @@ VALIDATE_SIZE(TokenStruct, 0x114);
 class CFont
 {
   public:
-    static void *__fastcall LoadTextureCB(void *, int, uint);
-    static void UnloadTextureCB();
-
-    static void LoadTextures();
-    static void ReleaseTextures();
+    static grcTexturePC *__fastcall LoadTextureCB(void *, int, uint);
 
     static float GetCharacterSizeNormalDispatch(GTAChar chr);
     static float GetCHSCharacterSizeNormal();

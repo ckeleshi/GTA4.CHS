@@ -18,7 +18,7 @@ void CHtmlTextExport::ExportHtml(const path_type &input_folder)
 
         if (filename.extension() == ".whm")
         {
-            ExportText(filename.replace_extension(".txt"), ExtractWhmStrings(it->path(), hashes));
+            ExportJson(filename.replace_extension(".json"), ExtractWhmStrings(it->path(), hashes));
         }
     }
 }
@@ -38,9 +38,9 @@ void CHtmlTextExport::GenerateDataBase(const path_type &input_folder, const path
 
         auto filename = it->path();
 
-        if (filename.extension() == ".txt")
+        if (filename.extension() == ".json")
         {
-            for (auto &entry : LoadText(filename))
+            for (auto &entry : LoadJson(filename))
             {
                 texts.push_back(std::move(entry));
             }
@@ -52,6 +52,12 @@ void CHtmlTextExport::GenerateDataBase(const path_type &input_folder, const path
 
     for (auto &entry : texts)
     {
+        //忽略没翻译的文本
+        if (entry.hash == fnv_hash::hash_string(entry.str, false))
+        {
+            continue;
+        }
+
         WhmTextData bin_entry;
 
         bin_entry.hash = entry.hash;
@@ -76,7 +82,27 @@ void CHtmlTextExport::GenerateDataBase(const path_type &input_folder, const path
     out.Close();
 }
 
-void CHtmlTextExport::ExportText(const std::filesystem::path &filename,
+void CHtmlTextExport::ConvertJson(const path_type &input_folder)
+{
+    std::filesystem::recursive_directory_iterator it{input_folder};
+
+    for (; it != std::filesystem::recursive_directory_iterator{}; ++it)
+    {
+        if (!it->is_regular_file())
+        {
+            continue;
+        }
+
+        auto filename = it->path();
+
+        if (filename.extension() == ".txt")
+        {
+            ExportJson(filename.replace_extension(".json"), LoadText(filename));
+        }
+    }
+}
+
+void CHtmlTextExport::ExportJson(const std::filesystem::path &filename,
                                  const std::vector<exported_text_entry> &container)
 {
     if (container.empty())
@@ -91,15 +117,31 @@ void CHtmlTextExport::ExportText(const std::filesystem::path &filename,
         return;
     }
 
-    std::fwrite("\xEF\xBB\xBF", 1, 3, out);
+    rapidjson::StringBuffer buffer(nullptr, 1024 * 1024 * 10); // 10MB
+    rapidjson::PrettyWriter writer(buffer);
+
+    buffer.Clear();
+
+    writer.StartArray();
 
     for (auto &entry : container)
     {
-        fmt::fprintf(out, ";0x%08X=%s\n", entry.hash, Windows1252ToUtf8(entry.str));
-        fmt::fprintf(out, "0x%08X=\n\n", entry.hash);
+        writer.StartObject();
+        writer.Key("hash");
+        writer.Uint(entry.hash);
+        writer.Key("original");
+        writer.String(entry.ori.c_str());
+        writer.Key("translated");
+        writer.String(entry.str.c_str());
+        writer.Key("desc");
+        writer.String("");
+        writer.EndObject();
     }
 
-    std::fclose(out);
+    writer.EndArray();
+
+    fwrite(buffer.GetString(), buffer.GetSize(), 1, out);
+    fclose(out);
 }
 
 bool CHtmlTextExport::IsBlankText(const std::string &str)
@@ -131,33 +173,94 @@ std::vector<CHtmlTextExport::exported_text_entry> CHtmlTextExport::LoadText(cons
 
     while (std::getline(stream, line))
     {
+        bool original = false;
+
         ++line_no;
 
         line.erase(0, line.find_first_not_of(' '));
         line.erase(line.find_last_not_of(' ') + 1);
 
-        if (line.empty() || line.front() == ';')
+        if (line.empty())
         {
             continue;
         }
 
+        if (line.front() == ';')
+        {
+            original = true;
+            line.erase(line.begin());
+        }
+
         if (std::regex_match(line, matches, entry_regex))
         {
-            exported_text_entry entry;
+            auto hash = std::stoul(matches.str(1), nullptr, 16);
+            auto str = matches.str(2);
 
-            entry.hash = std::stoul(matches.str(1), nullptr, 16);
-            entry.str = matches.str(2);
-
-            //忽略空白文本&原译一致的文本
-            if (!IsBlankText(entry.str) && entry.hash != fnv_hash::hash_string(entry.str, false))
+            //忽略空白文本
+            if (IsBlankText(str))
             {
-                result.emplace_back(std::move(entry));
+                continue;
+            }
+
+            if (result.empty() || result.back().hash != hash)
+            {
+                result.emplace_back();
+                result.back().hash = hash;
+            }
+
+            if (original)
+            {
+                result.back().ori = str;
+            }
+            else
+            {
+                result.back().str = str;
             }
         }
         else
         {
             fmt::printf("%s: 第%u行无法识别。\n", filename.string(), line_no);
         }
+    }
+
+    return result;
+}
+
+std::vector<CHtmlTextExport::exported_text_entry> CHtmlTextExport::LoadJson(const std::filesystem::path &filename)
+{
+    std::vector<CHtmlTextExport::exported_text_entry> result;
+    rapidjson::Document doc;
+
+    std::ifstream stream(filename);
+
+    if (!stream)
+    {
+        fmt::printf("打开文件失败。\n");
+        return result;
+    }
+
+    std::string json(std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{});
+
+    if (doc.Parse(json.c_str()).HasParseError())
+    {
+        fmt::printf("json解析失败。\n");
+        return result;
+    }
+
+    if (!doc.IsArray())
+    {
+        fmt::printf("json类型错误。\n");
+        return result;
+    }
+
+    auto text_entries_array = doc.GetArray();
+
+    for (auto &entry : text_entries_array)
+    {
+        auto obj = entry.GetObj();
+
+        result.emplace_back(
+            exported_text_entry{obj["hash"].GetUint(), obj["original"].GetString(), obj["translated"].GetString()});
     }
 
     return result;

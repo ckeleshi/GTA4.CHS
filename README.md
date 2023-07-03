@@ -7,5 +7,5 @@
 [zlib(Vcpkg)](https://github.com/madler/zlib)<br/>
 [utfcpp(Vcpkg)](https://github.com/nemtrif/utfcpp)<br/>
 [fmt(Vcpkg)](https://github.com/fmtlib/fmt)<br/>
-[libpng(Vcpkg)](https://github.com/glennrp/libpng)<br/>
-[libsquish(Vcpkg)](https://sourceforge.net/projects/libsquish/)<br/>
+[rapidjson(Vcpkg)](https://github.com/Tencent/rapidjson)<br/>
+[spdlog(Vcpkg)](https://github.com/gabime/spdlog)<br/>

@@ -33,12 +33,16 @@
 
 // vcpkg
 #include <fmt/printf.h>
-#include <png.h>
 #include <range/v3/all.hpp>
-#include <squish.h>
+#include <rapidjson/document.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/reader.h>
+#include <rapidjson/stream.h>
+#include <rapidjson/stringbuffer.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/spdlog.h>
 #include <utf8cpp/utf8.h>
 #include <zlib.h>
-#include <png.h>
 
 typedef unsigned char uint8;
 typedef unsigned char uchar;
@@ -49,3 +53,5 @@ typedef unsigned int uint32;
 typedef unsigned long long ulonglong;
 typedef unsigned long long uint64;
 typedef std::filesystem::path tPath;
+
+struct grcTexturePC;

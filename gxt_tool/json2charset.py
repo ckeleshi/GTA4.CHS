@@ -1,14 +1,16 @@
 ﻿import struct
 import json
 import sys
-import pathlib
 import time
+from pathlib import Path
+from array import array
+from collections import namedtuple
 
 
 def collect_chars(folder):
     chars = set()
-    for j in [j for j in pathlib.Path(folder).glob('*.json') if j.is_file()]:
-        with open(pathlib.Path(folder, j), 'r', encoding='utf-8') as f:
+    for j in [j for j in Path(folder).glob('*.json') if j.is_file()]:
+        with open(Path(folder, j), 'r', encoding='utf-8') as f:
             chars = chars.union(set(f.read()))
 
     for ascii in range(1, 256):
@@ -25,7 +27,7 @@ def write_charset(chars, filename):
     char_per_line = 64
     char_index = 0
     chars.sort()
-    pathlib.Path(filename).parent.mkdir(parents=True, exist_ok=True)
+    Path(filename).parent.mkdir(parents=True, exist_ok=True)
     with open(filename, "w", encoding='utf-8') as f:
         for char in chars:
             f.write(char)

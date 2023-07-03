@@ -1,8 +1,10 @@
 ﻿import struct
 import json
 import sys
-import pathlib
 import time
+from pathlib import Path
+from array import array
+from collections import namedtuple
 
 def load_gxt(filename):
     data = dict()
@@ -30,7 +32,6 @@ def load_gxt(filename):
         tdat_data_offset = tdat_block_offset+8
         for key_index in range(tkey_count):
             dat_offset,crc = struct.unpack('II', gxt_bin[tkey_data_offset+8*key_index:tkey_data_offset+8*key_index+8])
-            entry_bytes = bytes()
             entry_bytes_start_offset = tdat_data_offset+dat_offset
             entry_bytes_cur_offset = 0
             dat_str = str()
@@ -51,9 +52,9 @@ def load_gxt(filename):
     return data
 
 def write_jsons(data:dict, folder):
-    pathlib.Path(folder).mkdir(parents=True,exist_ok=True)
+    Path(folder).mkdir(parents=True,exist_ok=True)
     for table in data.items():
-        with open(pathlib.Path(folder,f"{table[0]}.json"), "w") as f:
+        with open(Path(folder,f"{table[0]}.json"), "w") as f:
             f.write(json.dumps({table[0]:table[1]},indent=4,sort_keys=False))
 
 if __name__ == '__main__':

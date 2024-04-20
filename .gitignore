@@ -3,5 +3,6 @@ build/
 .vscode/
 .xmake/
 CMakeSettings.json
+CMakePresets.json
 .vs/
 out/

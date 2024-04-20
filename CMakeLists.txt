@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
 set(CMAKE_CXX_STANDARD 20)
-set(VCPKG_TARGET_TRIPLET "x86-windows-static")
 
 project(gta4_chs)
 
@@ -15,12 +14,10 @@ file(GLOB common_sources "common/*.cpp")
 
 find_package(utf8cpp CONFIG REQUIRED)
 find_package(range-v3 CONFIG REQUIRED)
-find_package(ZLIB REQUIRED)
-find_package(PNG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(unofficial-libsquish CONFIG REQUIRED)
-find_package(RapidJSON CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+find_package(RapidJSON CONFIG REQUIRED)
+find_package(ZLIB REQUIRED)
 
 add_subdirectory(plugin)
 add_subdirectory(whm_io)

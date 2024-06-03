@@ -41,7 +41,7 @@ bool batch_matching::perform_search()
 
 bool batch_matching::is_all_succeed() const
 {
-    return ranges::all_of(_steps, [](const std::pair<std::string, match_step> &step) {
+    return std::ranges::all_of(_steps, [](const std::pair<std::string, match_step> &step) {
         return step.second.expected_size == step.second.result.size();
     });
 }

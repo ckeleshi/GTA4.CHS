@@ -63,7 +63,7 @@ void CHtmlTextExport::GenerateDataBase(const path_type &input_folder, const path
         bin_entry.hash = entry.hash;
         bin_entry.offset = text_data.size();
 
-        ranges::copy(entry.str, std::back_inserter(text_data));
+        std::ranges::copy(entry.str, std::back_inserter(text_data));
         text_data.push_back(0);
 
         text_table.push_back(bin_entry);
@@ -146,7 +146,7 @@ void CHtmlTextExport::ExportJson(const std::filesystem::path &filename,
 
 bool CHtmlTextExport::IsBlankText(const std::string &str)
 {
-    return ranges::all_of(str, [](char chr) {
+    return std::ranges::all_of(str, [](char chr) {
         // TODO: 全角空格之类更加特殊的字符判断
         return chr == ' ' || chr == '\t';
     });
@@ -367,7 +367,7 @@ void CHtmlTextExport::TryAppendString(std::vector<exported_text_entry> &containe
 
     //判断字符串是否为url
     auto validate_url = [validate_url_char](std::string_view view) {
-        auto validate_char_result = ranges::all_of(view, validate_url_char);
+        auto validate_char_result = std::ranges::all_of(view, validate_url_char);
         auto first_dot_pos = view.find('.');
         auto last_dot_pos = view.find_last_of('.');
 
@@ -380,7 +380,7 @@ void CHtmlTextExport::TryAppendString(std::vector<exported_text_entry> &containe
 
     auto validate_string = [validate_efigs_char, validate_url](std::string_view view) {
         //包含EFIGS字母且不是网址
-        return ranges::any_of(view, validate_efigs_char) && !validate_url(view);
+        return std::ranges::any_of(view, validate_efigs_char) && !validate_url(view);
     };
 
     if (ptr == nullptr)

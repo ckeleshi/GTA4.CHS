@@ -6,7 +6,7 @@ void CCharTable::LoadTable(const std::filesystem::path &filename) {
 }
 
 std::pair<uint, uint> CCharTable::GetCharPos(GTAChar chr) const {
-    auto char_it = ranges::lower_bound(m_Chars, chr);
+    auto char_it = std::ranges::lower_bound(m_Chars, chr);
 
     if (char_it != m_Chars.end() && *char_it == chr) {
         auto diff = char_it - m_Chars.begin();

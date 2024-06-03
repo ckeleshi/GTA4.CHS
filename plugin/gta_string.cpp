@@ -70,11 +70,11 @@ namespace gta_string
 
         if (wide_string_it != truncated_text_map.end())
         {
-            ranges::copy(wide_string_it->second, dst);
+            std::ranges::copy(wide_string_it->second, dst);
         }
         else
         {
-            *ranges::copy(src_span, dst).out = 0;
+            *std::ranges::copy(src_span, dst).out = 0;
         }
     }
 
@@ -118,7 +118,7 @@ namespace gta_string
         else
         {
             //遇到无效的utf8序列(如网页中未翻译的FIGS字符)，则直接扩展成utf16
-            *ranges::copy(src_span, dst).out = 0;
+            *std::ranges::copy(src_span, dst).out = 0;
         }
     }
 

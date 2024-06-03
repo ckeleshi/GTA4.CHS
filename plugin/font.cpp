@@ -11,9 +11,9 @@ static const float fTextureRowsCount = fTextureResolution / fSpriteHeight;
 static const float fTextureColumnsCount = fTextureResolution / fSpriteWidth;
 static const float fRatio = 4.0f;
 
-struct grcTexturePC *CNFont;
+void *CNFont;
 
-grcTexturePC *__fastcall CFont::LoadTextureCB(void *pDictionary, int, uint hash)
+void *__fastcall CFont::LoadTextureCB(void *pDictionary, int, uint hash)
 {
     auto result = plugin.game.Dictionary_grcTexturePC_GetElementByKey(pDictionary, hash);
 

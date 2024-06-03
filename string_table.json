@@ -1,0 +1,14 @@
+﻿{
+    "table": {
+        "translations": [
+            {
+                "origin": "This is English",
+                "translated": "这是中文"
+            },
+            {
+                "origin": "Another English",
+                "translated": "另一个中文"
+            }
+        ]
+    }
+}

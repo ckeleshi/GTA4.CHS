@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <cstring>
 #include <d3d9.h>
+#include <ranges>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -33,7 +34,6 @@
 
 // vcpkg
 #include <fmt/printf.h>
-#include <range/v3/all.hpp>
 #include <rapidjson/document.h>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/reader.h>
@@ -53,5 +53,3 @@ typedef unsigned int uint32;
 typedef unsigned long long ulonglong;
 typedef unsigned long long uint64;
 typedef std::filesystem::path tPath;
-
-struct grcTexturePC;

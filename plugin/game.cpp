@@ -1,14 +1,14 @@
 ﻿#include "game.h"
 #include "plugin.h"
 
-void CGame::Graphics_SetRenderState(grcTexturePC *texture, int arg4)
+void CGame::Graphics_SetRenderState(void *texture, int arg4)
 {
-    injector::cstd<void(grcTexturePC *, int)>::call(game_addr.fnGraphics_SetRenderState, texture, arg4);
+    injector::cstd<void(void *, int)>::call(game_addr.fnGraphics_SetRenderState, texture, arg4);
 }
 
-grcTexturePC* CGame::Dictionary_grcTexturePC_GetElementByKey(void* dictionary, uint hash)
+void* CGame::Dictionary_grcTexturePC_GetElementByKey(void* dictionary, uint hash)
 {
-    return injector::thiscall<grcTexturePC* (void*, uint)>::call(game_addr.fnDictionary_GetElementByKey, dictionary, hash);
+    return injector::thiscall<void* (void*, uint)>::call(game_addr.fnDictionary_GetElementByKey, dictionary, hash);
 }
 
 uint CGame::Hash_HashStringFromSeediCase(const char* str, uint hash)

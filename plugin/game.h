@@ -36,9 +36,9 @@ class CGame
 
     } game_addr;
 
-    void Graphics_SetRenderState(grcTexturePC *texture, int = 1);
+    void Graphics_SetRenderState(void *texture, int = 1);
 
-    grcTexturePC *Dictionary_grcTexturePC_GetElementByKey(void *dictionary, uint hash);
+    void *Dictionary_grcTexturePC_GetElementByKey(void *dictionary, uint hash);
 
     uint Hash_HashStringFromSeediCase(const char *str, uint hash = 0);
 

@@ -2,7 +2,6 @@ build/
 .cache/
 .vscode/
 .xmake/
-CMakeSettings.json
-CMakePresets.json
+CMakeUserPresets.json
 .vs/
 out/

@@ -34,11 +34,7 @@
 
 // vcpkg
 #include <fmt/printf.h>
-#include <rapidjson/document.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/reader.h>
-#include <rapidjson/stream.h>
-#include <rapidjson/stringbuffer.h>
+#include <nlohmann/json.hpp>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 #include <utf8cpp/utf8.h>

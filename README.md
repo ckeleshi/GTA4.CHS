@@ -6,5 +6,5 @@
 [zlib(Vcpkg)](https://github.com/madler/zlib)<br/>
 [utfcpp(Vcpkg)](https://github.com/nemtrif/utfcpp)<br/>
 [fmt(Vcpkg)](https://github.com/fmtlib/fmt)<br/>
-[rapidjson(Vcpkg)](https://github.com/Tencent/rapidjson)<br/>
+[nlohmann-json(Vcpkg)](https://github.com/nlohmann/json)<br/>
 [spdlog(Vcpkg)](https://github.com/gabime/spdlog)<br/>

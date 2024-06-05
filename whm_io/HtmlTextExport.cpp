@@ -3,11 +3,11 @@
 #include "HTMLDocument.h"
 #include "rsc_header.h"
 
-void CHtmlTextExport::ExportHtml(const path_type &input_folder)
+void CHtmlTextExport::ExportHtml(const path_type& input_folder)
 {
     std::set<std::size_t> hashes;
 
-    std::filesystem::recursive_directory_iterator it{input_folder};
+    std::filesystem::recursive_directory_iterator it{ input_folder };
 
     for (; it != std::filesystem::recursive_directory_iterator{}; ++it)
     {
@@ -23,11 +23,11 @@ void CHtmlTextExport::ExportHtml(const path_type &input_folder)
     }
 }
 
-void CHtmlTextExport::GenerateDataBase(const path_type &input_folder, const path_type &output_file)
+void CHtmlTextExport::GenerateDataBase(const path_type& input_folder, const path_type& output_file)
 {
     std::vector<exported_text_entry> texts;
 
-    std::filesystem::recursive_directory_iterator it{input_folder};
+    std::filesystem::recursive_directory_iterator it{ input_folder };
 
     for (; it != std::filesystem::recursive_directory_iterator{}; ++it)
     {
@@ -40,7 +40,7 @@ void CHtmlTextExport::GenerateDataBase(const path_type &input_folder, const path
 
         if (filename.extension() == ".json")
         {
-            for (auto &entry : LoadJson(filename))
+            for (auto& entry : LoadJson(filename))
             {
                 texts.push_back(std::move(entry));
             }
@@ -50,7 +50,7 @@ void CHtmlTextExport::GenerateDataBase(const path_type &input_folder, const path
     std::vector<WhmTextData> text_table;
     std::vector<char> text_data;
 
-    for (auto &entry : texts)
+    for (auto& entry : texts)
     {
         //忽略没翻译的文本
         if (entry.hash == fnv_hash::hash_string(entry.str, false))
@@ -77,14 +77,14 @@ void CHtmlTextExport::GenerateDataBase(const path_type &input_folder, const path
         return;
     }
 
-    out.WriteArray2(std::span{text_table});
-    out.WriteArray2(std::span{text_data});
+    out.WriteArray2(std::span{ text_table });
+    out.WriteArray2(std::span{ text_data });
     out.Close();
 }
 
-void CHtmlTextExport::ConvertJson(const path_type &input_folder)
+void CHtmlTextExport::ConvertJson(const path_type& input_folder)
 {
-    std::filesystem::recursive_directory_iterator it{input_folder};
+    std::filesystem::recursive_directory_iterator it{ input_folder };
 
     for (; it != std::filesystem::recursive_directory_iterator{}; ++it)
     {
@@ -102,8 +102,8 @@ void CHtmlTextExport::ConvertJson(const path_type &input_folder)
     }
 }
 
-void CHtmlTextExport::ExportJson(const std::filesystem::path &filename,
-                                 const std::vector<exported_text_entry> &container)
+void CHtmlTextExport::ExportJson(const std::filesystem::path& filename,
+    const std::vector<exported_text_entry>& container)
 {
     if (container.empty())
     {
@@ -117,42 +117,28 @@ void CHtmlTextExport::ExportJson(const std::filesystem::path &filename,
         return;
     }
 
-    rapidjson::StringBuffer buffer(nullptr, 1024 * 1024 * 10); // 10MB
-    rapidjson::PrettyWriter writer(buffer);
+    auto j = nlohmann::json::array();
 
-    buffer.Clear();
-
-    writer.StartArray();
-
-    for (auto &entry : container)
+    for (auto& entry : container)
     {
-        writer.StartObject();
-        writer.Key("hash");
-        writer.Uint(entry.hash);
-        writer.Key("original");
-        writer.String(entry.ori.c_str());
-        writer.Key("translated");
-        writer.String(entry.str.c_str());
-        writer.Key("desc");
-        writer.String("");
-        writer.EndObject();
+        j.push_back({ {"hash", entry.hash}, {"original", entry.ori}, {"translated", entry.str}, {"desc", ""} });
     }
 
-    writer.EndArray();
+    auto text = j.dump(2);
 
-    fwrite(buffer.GetString(), buffer.GetSize(), 1, out);
+    fwrite(text.c_str(), text.length(), 1, out);
     fclose(out);
 }
 
-bool CHtmlTextExport::IsBlankText(const std::string &str)
+bool CHtmlTextExport::IsBlankText(const std::string& str)
 {
     return std::ranges::all_of(str, [](char chr) {
         // TODO: 全角空格之类更加特殊的字符判断
         return chr == ' ' || chr == '\t';
-    });
+        });
 }
 
-std::vector<CHtmlTextExport::exported_text_entry> CHtmlTextExport::LoadText(const std::filesystem::path &filename)
+std::vector<CHtmlTextExport::exported_text_entry> CHtmlTextExport::LoadText(const std::filesystem::path& filename)
 {
     std::vector<exported_text_entry> result;
 
@@ -226,10 +212,9 @@ std::vector<CHtmlTextExport::exported_text_entry> CHtmlTextExport::LoadText(cons
     return result;
 }
 
-std::vector<CHtmlTextExport::exported_text_entry> CHtmlTextExport::LoadJson(const std::filesystem::path &filename)
+std::vector<CHtmlTextExport::exported_text_entry> CHtmlTextExport::LoadJson(const std::filesystem::path& filename)
 {
     std::vector<CHtmlTextExport::exported_text_entry> result;
-    rapidjson::Document doc;
 
     std::ifstream stream(filename);
 
@@ -238,35 +223,32 @@ std::vector<CHtmlTextExport::exported_text_entry> CHtmlTextExport::LoadJson(cons
         fmt::printf("打开文件失败。\n");
         return result;
     }
+    try
+    {
+        auto j = nlohmann::json::parse(stream);
 
-    std::string json(std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{});
+        if (!j.is_array())
+        {
+            fmt::printf("json类型错误。\n");
+            return result;
+        }
 
-    if (doc.Parse(json.c_str()).HasParseError())
+        for (auto& entry : j)
+        {
+            result.emplace_back(
+                exported_text_entry{ entry["hash"], entry["original"], entry["translated"] });
+        }
+    }
+    catch (nlohmann::json::exception&)
     {
         fmt::printf("json解析失败。\n");
         return result;
     }
 
-    if (!doc.IsArray())
-    {
-        fmt::printf("json类型错误。\n");
-        return result;
-    }
-
-    auto text_entries_array = doc.GetArray();
-
-    for (auto &entry : text_entries_array)
-    {
-        auto obj = entry.GetObj();
-
-        result.emplace_back(
-            exported_text_entry{obj["hash"].GetUint(), obj["original"].GetString(), obj["translated"].GetString()});
-    }
-
     return result;
 }
 
-std::vector<uchar> CHtmlTextExport::UnpackWhm(const path_type &input_file)
+std::vector<uchar> CHtmlTextExport::UnpackWhm(const path_type& input_file)
 {
     BinaryFile file;
     std::vector<uchar> uncompressed_bytes;
@@ -296,13 +278,13 @@ std::vector<uchar> CHtmlTextExport::UnpackWhm(const path_type &input_file)
     return uncompressed_bytes;
 }
 
-void CHtmlTextExport::ExtractNodeStrings(CHtmlNode *node, std::vector<uchar> &block,
-                                         std::vector<exported_text_entry> &container, std::set<std::size_t> &hashes)
+void CHtmlTextExport::ExtractNodeStrings(CHtmlNode* node, std::vector<uchar>& block,
+    std::vector<exported_text_entry>& container, std::set<std::size_t>& hashes)
 {
     if (node == nullptr)
         return;
 
-    for (auto &element : node->m_children.get_span(block))
+    for (auto& element : node->m_children.get_span(block))
     {
         ExtractNodeStrings(element.locate(block), block, container, hashes);
     }
@@ -316,7 +298,7 @@ void CHtmlTextExport::ExtractNodeStrings(CHtmlNode *node, std::vector<uchar> &bl
     }
 
     case Node_HtmlDataNode: {
-        auto data_node = static_cast<CHtmlDataNode *>(node);
+        auto data_node = static_cast<CHtmlDataNode*>(node);
 
         TryAppendString(container, data_node->m_pData.locate(block), hashes);
 
@@ -329,8 +311,8 @@ void CHtmlTextExport::ExtractNodeStrings(CHtmlNode *node, std::vector<uchar> &bl
     }
 }
 
-void CHtmlTextExport::TryAppendString(std::vector<exported_text_entry> &container, char *ptr,
-                                      std::set<std::size_t> &hashes)
+void CHtmlTextExport::TryAppendString(std::vector<exported_text_entry>& container, char* ptr,
+    std::set<std::size_t>& hashes)
 {
     //合法的文本类型:
     // 1) 包含EFIGS字母
@@ -338,32 +320,32 @@ void CHtmlTextExport::TryAppendString(std::vector<exported_text_entry> &containe
 
     //判断一个字符是不是数字
     auto validate_digit_char = [](char chr) {
-        auto ucr = *reinterpret_cast<uchar *>(&chr);
+        auto ucr = *reinterpret_cast<uchar*>(&chr);
 
         return (ucr >= '0' && ucr <= '9');
-    };
+        };
 
     //判断一个字符是不是英语字母
     auto validate_english_char = [](char chr) {
-        auto ucr = *reinterpret_cast<uchar *>(&chr);
+        auto ucr = *reinterpret_cast<uchar*>(&chr);
 
         return (ucr >= 'a' && ucr <= 'z') || (ucr >= 'A' && ucr <= 'Z');
-    };
+        };
 
     //判断一个字符是不是EFIGS字母
     auto validate_efigs_char = [validate_english_char](char chr) {
-        auto ucr = *reinterpret_cast<uchar *>(&chr);
+        auto ucr = *reinterpret_cast<uchar*>(&chr);
 
         return validate_english_char(chr) || (ucr >= 0xC0);
-    };
+        };
 
     //判断字符是不是游戏中url会出现的字符
     auto validate_url_char = [validate_digit_char, validate_english_char](char chr) {
-        auto ucr = *reinterpret_cast<uchar *>(&chr);
+        auto ucr = *reinterpret_cast<uchar*>(&chr);
 
         return validate_english_char(chr) || validate_digit_char(chr) || ucr == '.' || ucr == '%' || ucr == '@' ||
-               ucr == '-' || ucr == '_';
-    };
+            ucr == '-' || ucr == '_';
+        };
 
     //判断字符串是否为url
     auto validate_url = [validate_url_char](std::string_view view) {
@@ -372,16 +354,16 @@ void CHtmlTextExport::TryAppendString(std::vector<exported_text_entry> &containe
         auto last_dot_pos = view.find_last_of('.');
 
         return !view.empty() &&                           //非空
-               validate_char_result &&                    //所有字符合法
-               first_dot_pos != std::string_view::npos && //最少包含一个'.'
-               first_dot_pos != 0 &&                      //第一个字符不是'.'
-               last_dot_pos != view.length() - 1;         //最后一个字符不是'.'
-    };
+            validate_char_result &&                    //所有字符合法
+            first_dot_pos != std::string_view::npos && //最少包含一个'.'
+            first_dot_pos != 0 &&                      //第一个字符不是'.'
+            last_dot_pos != view.length() - 1;         //最后一个字符不是'.'
+        };
 
     auto validate_string = [validate_efigs_char, validate_url](std::string_view view) {
         //包含EFIGS字母且不是网址
         return std::ranges::any_of(view, validate_efigs_char) && !validate_url(view);
-    };
+        };
 
     if (ptr == nullptr)
     {
@@ -394,13 +376,13 @@ void CHtmlTextExport::TryAppendString(std::vector<exported_text_entry> &containe
 
         if (hashes.insert(hash).second)
         {
-            container.emplace_back(exported_text_entry{hash, ptr});
+            container.emplace_back(exported_text_entry{ hash, ptr });
         }
     }
 }
 
 std::vector<CHtmlTextExport::exported_text_entry> CHtmlTextExport::ExtractWhmStrings(
-    const std::filesystem::path &filename, std::set<std::size_t> &hashes)
+    const std::filesystem::path& filename, std::set<std::size_t>& hashes)
 {
     std::vector<exported_text_entry> container;
 
@@ -408,7 +390,7 @@ std::vector<CHtmlTextExport::exported_text_entry> CHtmlTextExport::ExtractWhmStr
 
     if (!block.empty())
     {
-        auto *p_doc = reinterpret_cast<CHtmlDocument *>(block.data());
+        auto* p_doc = reinterpret_cast<CHtmlDocument*>(block.data());
 
         ExtractNodeStrings(p_doc->m_pBody.locate(block), block, container, hashes);
     }
@@ -416,13 +398,13 @@ std::vector<CHtmlTextExport::exported_text_entry> CHtmlTextExport::ExtractWhmStr
     return container;
 }
 
-std::string CHtmlTextExport::Windows1252ToUtf8(const std::string &str)
+std::string CHtmlTextExport::Windows1252ToUtf8(const std::string& str)
 {
     std::string result;
 
     for (auto chr : str)
     {
-        utf8::append(*reinterpret_cast<uchar *>(&chr), std::back_inserter(result));
+        utf8::append(*reinterpret_cast<uchar*>(&chr), std::back_inserter(result));
     }
 
     return result;

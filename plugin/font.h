@@ -12,7 +12,7 @@ enum eTextAlignment
 
 class CFontDetails
 {
-  public:
+public:
     uint field_0;
     float fScaleX;
     float fScaleY;
@@ -46,7 +46,7 @@ VALIDATE_SIZE(CFontDetails, 0x48);
 
 class CFontInfo
 {
-  public:
+public:
     uchar iPropValues[255];
     uchar iTextureMap[255];
     char pad1[2];
@@ -62,7 +62,7 @@ class CFontInfo
     int iSubFont2End;
     int iCommonFontStart;
     int iCommonFontEnd;
-    void *pTexture;
+    void* pTexture;
     float fTextureWidth;
     float fTextureHeight;
     float fSpriteSize;
@@ -73,7 +73,7 @@ VALIDATE_SIZE(CFontInfo, 0x258);
 
 class CFontRenderState
 {
-  public:
+public:
     uint magic;
     float field_4;
     float field_8;
@@ -99,7 +99,7 @@ VALIDATE_SIZE(CFontRenderState, 0x38);
 
 class CFontBuffer
 {
-  public:
+public:
     CFontRenderState render_state;
     GTAChar buffer[996];
 };
@@ -119,8 +119,8 @@ VALIDATE_SIZE(TokenStruct, 0x114);
 
 class CFont
 {
-  public:
-    static void *__fastcall LoadTextureCB(void *, int, uint);
+public:
+    static void* __fastcall LoadTextureCB(void*, int, uint);
 
     static float GetCharacterSizeNormalDispatch(GTAChar chr);
     static float GetCHSCharacterSizeNormal();
@@ -134,14 +134,16 @@ class CFont
     // 判断字符是否为不能放在行首的标点符号
     static bool IsSpecialPunctuationMark(GTAChar chr);
     // 将特殊字符看作单词的一部分
-    static void SkipSpecialPunctuationMarks(const GTAChar *&str);
-    static void AddSpecialPunctuationMarksWidth(const GTAChar *&str, float *width);
+    static void SkipSpecialPunctuationMarks(const GTAChar*& str);
+    static void AddSpecialPunctuationMarksWidth(const GTAChar*& str, float* width);
 
-    static const GTAChar *SkipWord(const GTAChar *str);
-    static const GTAChar *SkipWord_Prolog(std::uintptr_t address);
-    static const GTAChar *SkipSpaces(const GTAChar *text);
+    static const GTAChar* SkipWord(const GTAChar* str);
+    static const GTAChar* SkipWord_Prolog(std::uintptr_t address);
+    static const GTAChar* SkipSpaces(const GTAChar* text);
 
-    static float GetMaxWordWidth(const GTAChar *text);
+    static float GetMaxWordWidth(const GTAChar* text);
 
-    static float GetStringWidthRemake(const GTAChar *str, bool get_all);
+    static float GetStringWidthRemake(const GTAChar* str, bool get_all);
+
+    static void ProcessStringRoutine(float x, float y, const GTAChar* str, void* a4);
 };

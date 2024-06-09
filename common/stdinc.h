@@ -31,6 +31,7 @@
 #include "injector/calling.hpp"
 #include "injector/hooking.hpp"
 #include "injector/injector.hpp"
+#include "injector/utility.hpp"
 
 // vcpkg
 #include <fmt/printf.h>

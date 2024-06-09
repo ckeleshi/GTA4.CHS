@@ -1,5 +1,8 @@
 ﻿-----------todo-----------
 json自定义翻译功能
+91C777 call CFont::ProcessString
+922BA4 call CFont::ProcessString
+
 某些邮件回复时崩溃
 
 *craplist.net邮件排版问题(最低优先)

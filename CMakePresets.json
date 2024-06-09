@@ -2,9 +2,8 @@
   "version": 3,
   "configurePresets": [
     {
-      "name": "windows-base",
+      "name": "windows-x86-base",
       "description": "面向具有 Visual Studio 开发环境的 Windows。",
-      "hidden": true,
       "generator": "Ninja Multi-Config",
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "installDir": "${sourceDir}/out/install/${presetName}",
@@ -24,22 +23,20 @@
         "VCPKG_TARGET_TRIPLET": "x86-windows-static",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
-    },
+    }
+  ],
+  "buildPresets": [
     {
       "name": "x86-debug",
       "displayName": "x86 Debug",
-      "inherits": "windows-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "configurePreset": "windows-x86-base",
+      "configuration": "Debug"
     },
     {
       "name": "x86-release",
       "displayName": "x86 Release",
-      "inherits": "windows-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "configurePreset": "windows-x86-base",
+      "configuration": "Release"
     }
   ]
 }

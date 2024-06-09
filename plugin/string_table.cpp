@@ -1,15 +1,10 @@
 #include "string_table.h"
 #include "../common/fnv_hash.h"
 
-CStringTable& CStringTable::GetInstance()
-{
-    static CStringTable instance;
-
-    return instance;
-}
-
 void CStringTable::LoadTable(const std::filesystem::path& filename)
 {
+    auto logger = spdlog::get("gta4.chs");
+
     std::ifstream ifs(filename);
 
     if (!ifs)
@@ -25,7 +20,8 @@ void CStringTable::LoadTable(const std::filesystem::path& filename)
         {
             auto origin = it.key();
             auto translated = it.value().get<std::string>();
-            std::vector<GTAChar> utf16;
+            std::vector<GTAChar> worigin;
+            std::vector<GTAChar> wtranslated;
 
             if (translated.empty()) {
                 continue;
@@ -33,18 +29,23 @@ void CStringTable::LoadTable(const std::filesystem::path& filename)
 
             try
             {
-                utf8::utf8to16(translated.begin(), translated.end(), std::back_inserter(utf16));
-                utf16.push_back(0);
-                m_Table.emplace(fnv_hash::hash_string(origin.c_str(), false), std::move(utf16));
+                utf8::utf8to16(origin.begin(), origin.end(), std::back_inserter(worigin));
+                worigin.push_back(0);
+                utf8::utf8to16(translated.begin(), translated.end(), std::back_inserter(wtranslated));
+                wtranslated.push_back(0);
+                m_Table.emplace(fnv_hash::hash_string(worigin.data(), false), std::move(wtranslated));
             }
             catch (utf8::exception&)
             {
+                logger->error("Utf8 convert failed.");
                 continue;
             }
         }
     }
     catch (nlohmann::json::exception&)
     {
+        logger->error("Json processing failed.");
+
         return;
     }
 }

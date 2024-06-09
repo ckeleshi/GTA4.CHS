@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "../common/stdinc.h"
 #include "../common/common.h"
 
@@ -6,20 +6,20 @@ namespace gta_string
 {
     unsigned gtaWcslen(const GTAChar* str);
 
-    //´æµµ±êÌâ
+    //å­˜æ¡£æ ‡é¢˜
     uchar* gtaTruncateString(uchar* dst, const GTAChar* src, unsigned size);
     void gtaExpandString(const uchar* src, GTAChar* dst);
-    //ÏÔÊ¾´æµµ¸²¸ÇÌáÊ¾Ê±ÓÃÓÚ¸ñÊ½»¯µÄ´æµµÃû³Æ
+    //æ˜¾ç¤ºå­˜æ¡£è¦†ç›–æç¤ºæ—¶ç”¨äºæ ¼å¼åŒ–çš„å­˜æ¡£åç§°
 
     void gtaExpandString2(GTAChar* dst, const uchar* src, int a8);
-    //TBoGTÖØÍæÈÎÎñÑ¡Ôñ½çÃæ
+    //TBoGTé‡ç©ä»»åŠ¡é€‰æ‹©ç•Œé¢
     void gtaExpandString3(GTAChar* dst, const uchar* src, int a8);
 
-    //ÓÊ¼ş/ÍøÒ³
+    //é‚®ä»¶/ç½‘é¡µ
     void gtaTruncateString2(const GTAChar* src, uchar* dst);
     void gtaExpandStringGxt(const uchar* src, GTAChar* dst);
 
-    //½ÓÊÕ¿í×Ö·û´®£¬µ«×ª»»³Éutf8
+    //æ¥æ”¶å®½å­—ç¬¦ä¸²ï¼Œä½†è½¬æ¢æˆutf8
     void __stdcall gtaMailAppendWideStringAsUtf8(int id, const GTAChar* str);
 
     uchar* gtaUTF8strncpy(uchar* dest, const uchar* source, unsigned size);

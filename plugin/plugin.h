@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "../common/stdinc.h"
 #include "../common/common.h"
-#include "batch_matching.h"
+
 #include "char_table.h"
 #include "whm_table.h"
 #include "game.h"
@@ -25,7 +25,7 @@ public:
     CGame game;
 
 private:
-    static void RegisterPatchSteps(batch_matching& batch_matcher);
+    static void RegisterPatchSteps();
 };
 
 extern CPlugin plugin;

@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "batch_matching.h"
+
 
 namespace gta_mail_reply
 {
@@ -25,5 +25,5 @@ namespace gta_mail_reply
     };
     VALIDATE_SIZE(class_for_mr, 0x44C);
 
-    void register_patches(batch_matching& batch_matcher);
+    void register_patches();
 }

@@ -14,8 +14,6 @@ add_library(plugin SHARED
     ${CMAKE_SOURCE_DIR}/common/common.cpp
     ${CMAKE_SOURCE_DIR}/common/fnv_hash.cpp
     ${CMAKE_SOURCE_DIR}/common/module_path.cpp
-    batch_matching.cpp
-    byte_pattern.cpp
     char_table.cpp
     dllmain.cpp
     font.cpp

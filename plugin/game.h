@@ -7,8 +7,6 @@ class CGame
 public:
     struct
     {
-        IDirect3DDevice9** ppD3DDevice;
-        void* pTexturePCVirtualTable;
         void* fnGraphics_SetRenderState;
         void* fnDictionary_GetElementByKey;
         void* fnHash_HashStringFromSeediCase;

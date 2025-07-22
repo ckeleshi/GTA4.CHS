@@ -53,6 +53,12 @@ void register_patches()
     // GetStringWidth使用了
     plugin.game.game_addr.fnFont_ParseToken = injector::aslr_ptr(0x7FB1C0).get();
 
+    // ProcessString使用了
+    plugin.game.game_addr.fnFont_ProcessToken = injector::aslr_ptr(0x7FCCE0).get();
+
+    //"font3"附近使用了
+    plugin.game.game_addr.fnDictionary_GetElementByKey = injector::aslr_ptr(0x424B60).get();
+
     // GetStringWidth使用了
     plugin.game.game_addr.fnFont_AddTokenStringWidth = injector::aslr_ptr(0x7F7D40).get();
 }

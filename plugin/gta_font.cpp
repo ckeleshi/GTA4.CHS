@@ -63,7 +63,7 @@ void register_patches()
 
     // CFont::ProcessString使用了
     // 跳过单词
-    injector::MakeJMP(injector::aslr_ptr(0x7FECA3).get(), CFont::SkipWord_Prolog);
+    injector::MakeJMP(injector::aslr_ptr(0x7F8CA0).get(), CFont::SkipWord_Prolog);
 
     // GetStringWidth使用了
     // 获取字符宽度

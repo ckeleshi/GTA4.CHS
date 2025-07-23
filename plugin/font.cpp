@@ -42,7 +42,7 @@ bool CFont::IsSpecialPunctuationMark(GTAChar chr)
 #if 0
     return false;
 #else
-    // —、。《》「」『』！，－：；？～
+    // —、。《》「」『』（）！，－：；？～
     return
         // chr == L'—' ||
         chr == L'、' || chr == L'。' ||
@@ -50,6 +50,8 @@ bool CFont::IsSpecialPunctuationMark(GTAChar chr)
         chr == L'》' ||
         // chr == L'「' ||
         chr == L'」' ||
+        // chr == L'（' ||
+        chr == L'）' ||
         // chr == L'『' ||
         chr == L'』' || chr == L'！' || chr == L'，' ||
         // chr == L'－' ||

@@ -7,4 +7,3 @@
 [utfcpp(Vcpkg)](https://github.com/nemtrif/utfcpp)<br/>
 [fmt(Vcpkg)](https://github.com/fmtlib/fmt)<br/>
 [nlohmann-json(Vcpkg)](https://github.com/nlohmann/json)<br/>
-[spdlog(Vcpkg)](https://github.com/gabime/spdlog)<br/>

@@ -181,10 +181,10 @@ struct dlc_truncate
 {
     void operator()(injector::reg_pack &regs) const
     {
-        auto ptr = &plugin.game.game_addr.pDLCTruncateBuffer[regs.eax + regs.edx];
+        auto ptr = &plugin.game.game_addr.pDLCTruncateBuffer[regs.esi + regs.eax];
 
-        auto offset = utf8::unchecked::append(*reinterpret_cast<const GTAChar *>(regs.esi), ptr) - ptr;
-        regs.edx += offset - 1;
+        auto offset = utf8::unchecked::append(*reinterpret_cast<const GTAChar *>(regs.edi), ptr) - ptr;
+        regs.eax += offset - 1;
     }
 };
 

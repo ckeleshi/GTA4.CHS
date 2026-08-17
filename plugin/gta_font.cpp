@@ -4,129 +4,95 @@
 
 namespace gta_font
 {
-    // 922095
-    __declspec(naked) void ProcessToken_Epilog()
+// 922095
+__declspec(naked) void ProcessToken_Epilog()
+{
+    __asm
     {
-        __asm
-        {
-            pop edi;
+            pop ebp;
             call plugin.game.game_addr.fnFont_ProcessToken;
             or eax, 0x80000000;
-            jmp edi;
-        }
+            jmp ebp;
     }
+}
 
-    // 922120
-    __declspec(naked) void ProcessToken_Epilog2()
+// 922120
+__declspec(naked) void ProcessToken_Epilog2()
+{
+    __asm
     {
-        __asm
-        {
-            and edi, 0x7FFFFFFF;
-            movzx eax, word ptr[edi - 4];
-            sub edi, 4;
+            and ebp, 0x7FFFFFFF;
+            movzx eax, word ptr[ebp - 4];
+            sub ebp, 4;
             ret;
-        }
     }
+}
 
-    // 922147
-    __declspec(naked) void ProcessToken_Epilog3()
+// 922147
+__declspec(naked) void ProcessToken_Epilog3()
+{
+    __asm
     {
-        __asm
-        {
-            and edi, 0x7FFFFFFF;
-            mov[esp + 0x16], cl;
-            test cl, cl;
+            and ebp, 0x7FFFFFFF;
+            xor eax, eax;
+            test eax,eax;
             ret;
-        }
     }
+}
 
-    void register_patches(batch_matching& batch_matcher)
-    {
-        // 搜索"~%c~"找到CFont::ProcessString
+void register_patches()
+{
+    // 搜索"~%c~"找到CFont::ProcessString
 
-        //储存CFont::ProcessString地址
-        batch_matcher.register_step("81 EC 8C 0A 00 00", 1, [](const byte_pattern::result_type& addresses) {
-            plugin.game.game_addr.fnFont_ProcessString = addresses[0].p();
-            });
+    // 储存CFont::ProcessString地址
+    plugin.game.game_addr.fnFont_ProcessString = injector::aslr_ptr(0x88B370).get();
 
-        //劫持菜单项的CFont::ProcessString
-        batch_matcher.register_step("F3 0F 10 44 24 18 8B C1 50", 1, [](const byte_pattern::result_type& addresses) {
-            injector::MakeCALL(addresses[0].i(33), CFont::ProcessStringRoutine);
-            });
+    // 劫持菜单项的CFont::ProcessString
+    injector::MakeCALL(injector::aslr_ptr(0x88BC11).get(), CFont::ProcessStringRoutine);
 
-        // ProcessToken epilog
-        batch_matcher.register_step("89 AC 24 80 00 00 00 E8", 1, [](const byte_pattern::result_type& addresses) {
-            plugin.game.game_addr.fnFont_ProcessToken = injector::GetBranchDestination(addresses[0].i(7)).get();
-            injector::MakeCALL(addresses[0].i(7), ProcessToken_Epilog);
-            });
+    // ProcessToken epilog
+    injector::MakeCALL(injector::aslr_ptr(0x88B613).get(), ProcessToken_Epilog);
 
-        // ProcessString token branch2
-        batch_matcher.register_step("0F B7 47 FC 83 EF 04", 1, [](const std::vector<memory_pointer>& addresses) {
-            injector::MakeCALL(addresses[0].i(), ProcessToken_Epilog2);
-            injector::MakeNOP(addresses[0].i(5), 2);
-            });
+    // ProcessString token branch2
+    injector::MakeCALL(injector::aslr_ptr(0x88B687).get(), ProcessToken_Epilog2);
+    injector::MakeNOP(injector::aslr_ptr(0x88B68C).get(), 2);
 
-        // ProcessString token branch3
-        batch_matcher.register_step("88 4C 24 12 84 C9", 1, [](const std::vector<memory_pointer>& addresses) {
-            injector::MakeCALL(addresses[0].i(), ProcessToken_Epilog3);
-            injector::MakeNOP(addresses[0].i(5), 1);
-            });
+    // ProcessString token branch3
+    injector::MakeCALL(injector::aslr_ptr(0x88B6A7).get(), ProcessToken_Epilog3);
+    injector::MakeNOP(injector::aslr_ptr(0x88B6AC).get(), 2);
 
-        // CFont::ProcessString使用了
-        // 跳过单词
-        batch_matcher.register_step("57 8B 7C 24 08 85 FF 75 04 33 C0 5F C3 56", 1,
-            [](const byte_pattern::result_type& addresses) {
-                injector::MakeJMP(addresses[0].i(), CFont::SkipWord_Prolog);
-            });
+    // CFont::ProcessString使用了
+    // 跳过单词
+    injector::MakeJMP(injector::aslr_ptr(0x8859E0).get(), CFont::SkipWord_Prolog);
 
-        // ProcessString使用了
-        // 获取字符宽度
-        batch_matcher.register_step("83 C0 E0 50 E8 ? ? ? ? D9 5C 24", 2, [](const byte_pattern::result_type& addresses) {
-            injector::MakeCALL(addresses[0].i(4), CFont::GetCharacterSizeNormalDispatch);
-            injector::MakeCALL(addresses[1].i(4), CFont::GetCharacterSizeNormalDispatch);
-            });
+    // GetStringWidth使用了
+    // 获取字符宽度
+    injector::MakeCALL(injector::aslr_ptr(0x884B64).get(), CFont::GetCharacterSizeNormalDispatch);
+    injector::MakeCALL(injector::aslr_ptr(0x88A7D5).get(), CFont::GetCharacterSizeNormalDispatch);
 
-        // 查找GetCharacterSizeNormal的引用获得
-        batch_matcher.register_step("6A 01 57 E8 ? ? ? ? D9 5C 24 30", 1, [](const byte_pattern::result_type& addresses) {
-            injector::MakeCALL(addresses[0].i(3), CFont::GetCharacterSizeDrawingDispatch);
-            });
+    // 查找GetCharacterSizeNormal的引用获得
+    injector::MakeCALL(injector::aslr_ptr(0x884D0A).get(), CFont::GetCharacterSizeDrawingDispatch);
 
-        // 查找GetCharacterSizeNormal的引用获得
-        batch_matcher.register_step("EB 12 6A 01 57 E8 ? ? ? ? D9 5C 24 24", 1,
-            [](const byte_pattern::result_type& addresses) {
-                injector::MakeCALL(addresses[0].i(5), CFont::GetCharacterSizeDrawingDispatch);
-            });
+    // 查找GetCharacterSizeNormal的引用获得
+    injector::MakeCALL(injector::aslr_ptr(0x88A58B).get(), CFont::GetCharacterSizeDrawingDispatch);
 
-        // RenderSingleBuffer使用了
-        // 绘制字符
-        batch_matcher.register_step("F3 0F 11 0C 24 E8 ? ? ? ? 8B 35", 1, [](const byte_pattern::result_type& addresses) {
-            injector::MakeCALL(addresses[0].i(5), CFont::PrintCharDispatch);
-            });
+    // RenderSingleBuffer使用了
+    // 绘制字符
+    injector::MakeCALL(injector::aslr_ptr(0x88A4A0).get(), CFont::PrintCharDispatch);
 
-        // 另一个使用PrintChar的函数里面
-        batch_matcher.register_step("E8 ? ? ? ? 6A 01 57 E8 ? ? ? ? D9 5C 24 30", 1,
-            [](const byte_pattern::result_type& addresses) {
-                injector::MakeCALL(addresses[0].i(), CFont::PrintCharDispatch);
-            });
+    // 另一个使用PrintChar的函数里面
+    injector::MakeCALL(injector::aslr_ptr(0x884D02).get(), CFont::PrintCharDispatch);
 
-        // 加载fonts.wtd中的font_chs
-        batch_matcher.register_step("8B CE 50 E8 ? ? ? ? 80 3D ? ? ? ? 6A", 2,
-            [](const byte_pattern::result_type& addresses) {
-                injector::MakeCALL(addresses[0].i(3), CFont::LoadTextureCB);
-                injector::MakeCALL(addresses[1].i(3), CFont::LoadTextureCB);
-            });
+    // 加载fonts.wtd中的font_chs
+    injector::MakeCALL(injector::aslr_ptr(0x887642).get(), CFont::LoadTextureCB);
+    injector::MakeCALL(injector::aslr_ptr(0x887CB6).get(), CFont::LoadTextureCB);
 
-        // ProcessString使用了
-        // GetStringWidth
-        batch_matcher.register_step("B8 B4 10 00 00", 1, [](const std::vector<memory_pointer>& addresses) {
-            injector::MakeJMP(addresses[0].i(-6), CFont::GetStringWidthRemake);
-            });
+    // ProcessString使用了
+    // GetStringWidth
+    injector::MakeJMP(injector::aslr_ptr(0x88A690).get(), CFont::GetStringWidthRemake);
 
-        // 使用了GetStringWidth
-        //  GetMaxWordWidth
-        batch_matcher.register_step("51 56 8B 74 24 0C 85 F6 75 05 D9 EE 5E 59 C3 66", 1,
-            [](const std::vector<memory_pointer>& addresses) {
-                injector::MakeJMP(addresses[0].i(), CFont::GetMaxWordWidth);
-            });
-    }
+    // 使用了GetStringWidth
+    //  GetMaxWordWidth
+    injector::MakeJMP(injector::aslr_ptr(0x88B2B0).get(), CFont::GetMaxWordWidth);
+}
 } // namespace gta_font

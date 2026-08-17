@@ -1,51 +1,42 @@
 ﻿#include "gta_menu.h"
+#include "font.h"
 
 namespace gta_menu
 {
-    void register_patches(batch_matching& batch_matcher)
-    {
-        //密集调用GetStringWidthJump的一个函数
-        //Esc菜单Header热区
-        batch_matcher.register_step("D9 5C 24 4C F3 0F 10 44 24 4C F3 0F 58 44 24 2C", 1, [](const byte_pattern::result_type& addresses)
-            {
-                injector::WriteMemory(addresses[0].i(0xAF4B - 0xAF62 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0xAF7A - 0xAF62 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0xAFB0 - 0xAF62 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0xAFE6 - 0xAF62 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0xB01C - 0xAF62 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0xB052 - 0xAF62 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0xB088 - 0xAF62 + 1), true, true);
-            });
+void register_patches()
+{
+    // 密集调用GetStringWidthJump的一个函数
+    // Esc菜单Header热区
+    injector::WriteMemory(injector::aslr_ptr(0x483B10).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x483B2E).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x483B54).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x483B7A).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x483BA0).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x483BC6).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x483BEC).get(), true, true);
 
-        //密集调用GetStringWidthJump的另一个函数
-        //Esc菜单Header间距
-        batch_matcher.register_step("B9 ? ? ? ? F3 0F 11 44 24 54 E8", 1, [](const byte_pattern::result_type& addresses)
-            {
-                injector::WriteMemory(addresses[0].i(0x860 - 0x867 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0x895 - 0x867 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0x8CB - 0x867 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0x901 - 0x867 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0x937 - 0x867 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0x96D - 0x867 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0x9A3 - 0x867 + 1), true, true);
-            });
+    // 密集调用GetStringWidthJump的另一个函数
+    // Esc菜单Header间距
+    injector::WriteMemory(injector::aslr_ptr(0x48561B).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x48563D).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x485663).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x485689).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x4856AF).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x4856D5).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x4856FB).get(), true, true);
 
-        //'Esc菜单Header热区'同一个函数里
-        //视频编辑器菜单Header热区
-        batch_matcher.register_step("6A 00 68 ? ? ? ? F3 0F 58 44 24 20 F3 0F 11 44 24 4C", 1, [](const byte_pattern::result_type& addresses)
-            {
-                injector::WriteMemory(addresses[0].i(0x595 - 0x5C4 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0x5C4 - 0x5C4 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0x5FA - 0x5C4 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0x630 - 0x5C4 + 1), true, true);
-            });
+    // //'Esc菜单Header热区'同一个函数里
+    // // 视频编辑器菜单Header热区
+    injector::MakeCALL(injector::aslr_ptr(0x4840BA).get(), CFont::GetStringWidthGetAllDetour);
+    injector::MakeCALL(injector::aslr_ptr(0x4840DF).get(), CFont::GetStringWidthGetAllDetour);
+    injector::MakeCALL(injector::aslr_ptr(0x484104).get(), CFont::GetStringWidthGetAllDetour);
+    injector::MakeCALL(injector::aslr_ptr(0x484129).get(), CFont::GetStringWidthGetAllDetour);
 
-        //'Esc菜单Header间距'同一个函数里
-        //视频编辑器菜单Header间距
-        batch_matcher.register_step("6A 00 68 ? ? ? ? B9 ? ? ? ? F3 0F 11 44 24 20", 1, [](const byte_pattern::result_type& addresses)
-            {
-                injector::WriteMemory(addresses[0].i(0x7E8 - 0x7E8 + 1), true, true);
-                injector::WriteMemory(addresses[0].i(0x81D - 0x7E8 + 1), true, true);
-            });
-    }
+    // //'Esc菜单Header间距'同一个函数里
+    // // 视频编辑器菜单Header间距
+    injector::WriteMemory(injector::aslr_ptr(0x4864AC).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x4864CE).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x4864F4).get(), true, true);
+    injector::WriteMemory(injector::aslr_ptr(0x48651A).get(), true, true);
 }
+} // namespace gta_menu

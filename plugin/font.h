@@ -144,6 +144,7 @@ public:
     static float GetMaxWordWidth(const GTAChar* text);
 
     static float GetStringWidthRemake(const GTAChar* str, bool get_all);
+    static float GetStringWidthGetAllDetour(const GTAChar* str, bool get_all);
 
     static void ProcessStringRoutine(float x, float y, const GTAChar* str, void* a4);
 };

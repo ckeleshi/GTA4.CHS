@@ -36,8 +36,6 @@
 // vcpkg
 #include <fmt/printf.h>
 #include <nlohmann/json.hpp>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/spdlog.h>
 #include <utf8cpp/utf8.h>
 #include <zlib.h>
 

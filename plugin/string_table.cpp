@@ -3,8 +3,6 @@
 
 void CStringTable::LoadTable(const std::filesystem::path& filename)
 {
-    auto logger = spdlog::get("gta4.chs");
-
     std::ifstream ifs(filename);
 
     if (!ifs)
@@ -37,15 +35,12 @@ void CStringTable::LoadTable(const std::filesystem::path& filename)
             }
             catch (utf8::exception&)
             {
-                logger->error("Utf8 convert failed.");
                 continue;
             }
         }
     }
     catch (nlohmann::json::exception&)
     {
-        logger->error("Json processing failed.");
-
         return;
     }
 }

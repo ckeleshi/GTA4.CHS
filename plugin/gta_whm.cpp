@@ -18,7 +18,7 @@ void register_patches()
 {
     // gta_html提到的用到CHtmlDataNode虚表的函数里
     // 替换whm自带文本
-    injector::MakeInline<html_data_node_replace_string>(injector::aslr_ptr(0x43BECA).get(),
-                                                        injector::aslr_ptr(0x43BECA + 6).get());
+    injector::MakeInline<html_data_node_replace_string>(injector::aslr_ptr(0x4B41EA).get(),
+                                                        injector::aslr_ptr(0x4B41EA + 6).get());
 }
 } // namespace gta_whm
